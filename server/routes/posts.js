@@ -1,5 +1,6 @@
 const express = require('express');
 const Post = require('../models/Post');
+const Comment = require('../models/Comment');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -71,4 +72,31 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// Add a comment (login needed)
+router.post('/:id/comments', auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ message: 'Comment text is required' });
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    const comment = await Comment.create({ post: post._id, user: req.userId, text });
+    res.status(201).json(comment);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// See all comments of a post (anyone can see)
+router.get('/:id/comments', async (req, res) => {
+  try {
+    const comments = await Comment.find({ post: req.params.id })
+      .sort({ createdAt: -1 })
+      .populate('user', 'name username avatar');
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 module.exports = router;
