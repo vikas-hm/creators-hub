@@ -25,3 +25,4 @@ mongoose
     });
   })
   .catch((err) => console.log('Connection error:', err.message));
+  app.use('/api/notifications', require('./routes/notifications'));

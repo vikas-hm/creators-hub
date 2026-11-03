@@ -6,6 +6,7 @@ import Profile from './pages/Profile';
 import Reels from './pages/Reels';
 import PostPage from './pages/Post';
 import Challenge from './pages/Challenge';
+import Notifications from './pages/Notifications';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
       <Route path="/reels" element={<Reels />} />
       <Route path="/p/:id" element={<PostPage />} />
       <Route path="/challenge" element={<Challenge />} />
+            <Route path="/notifications" element={<Notifications />} />
     </Routes>
   );
 }

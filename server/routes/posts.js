@@ -6,6 +6,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const cloudinary = require('../config/cloudinary');
 const Challenge = require('../models/Challenge');
+const notify = require('../utils/notify');
 
 const router = express.Router();
 
@@ -152,6 +153,9 @@ router.post('/:id/like', auth, async (req, res) => {
       post.likes.splice(index, 1);
     }
     await post.save();
+        if (index === -1) {
+      await notify({ recipient: post.user, sender: req.userId, type: 'like', post: post._id });
+    }
 
     res.json({ likes: post.likes.length, liked: index === -1 });
   } catch (err) {
@@ -194,6 +198,7 @@ router.post('/:id/comments', auth, async (req, res) => {
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
     const comment = await Comment.create({ post: post._id, user: req.userId, text });
+    await notify({ recipient: post.user, sender: req.userId, type: 'comment', post: post._id });
     res.status(201).json(comment);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

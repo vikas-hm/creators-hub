@@ -1,7 +1,7 @@
 const express = require('express');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-
+const notify = require('../utils/notify');
 const router = express.Router();
 
 // Get my profile (login needed)
@@ -63,7 +63,9 @@ router.post('/:id/follow', auth, async (req, res) => {
       await User.findByIdAndUpdate(req.userId, { $addToSet: { following: targetId } });
       await User.findByIdAndUpdate(targetId, { $addToSet: { followers: req.userId } });
     }
-
+    if (!alreadyFollowing) {
+      await notify({ recipient: targetId, sender: req.userId, type: 'follow' });
+    }
     res.json({ following: !alreadyFollowing });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
