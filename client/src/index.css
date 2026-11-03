@@ -479,3 +479,46 @@ a:hover {
   margin-top: 10px;
   padding: 9px 22px;
 }
+/* ---------- Upload and video ---------- */
+.preview {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  background: var(--ink-2);
+  border-radius: 10px;
+}
+
+.post-video {
+  display: block;
+  width: 100%;
+  max-height: 640px;
+  background: #000;
+}
+
+input[type='file'] {
+  padding: 10px;
+  background: #fff;
+}
+
+.preview-wrap {
+  position: relative;
+}
+
+.btn-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(21, 19, 43, 0.85);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-remove:hover {
+  background: var(--pink-deep);
+}

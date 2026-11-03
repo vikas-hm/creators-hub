@@ -1,20 +1,74 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../api';
 
+const MAX_IMAGE = 10 * 1024 * 1024;
+const MAX_VIDEO = 50 * 1024 * 1024;
+
 export default function NewPost({ onCreated }) {
-  const [imageUrl, setImageUrl] = useState('');
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
   const [caption, setCaption] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [inputKey, setInputKey] = useState(0);
+
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  const isVideo = file?.type.startsWith('video/');
+
+  const pickFile = (e) => {
+    const f = e.target.files[0];
+    setError('');
+    if (!f) return;
+
+    const video = f.type.startsWith('video/');
+    const image = f.type.startsWith('image/');
+
+    if (!video && !image) {
+      setError('Choose a photo or a video');
+      return;
+    }
+    if (image && f.size > MAX_IMAGE) {
+      setError('Photos can be up to 10 MB');
+      return;
+    }
+    if (video && f.size > MAX_VIDEO) {
+      setError('Videos can be up to 50 MB. Try a shorter clip.');
+      return;
+    }
+
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+  };
+    const removeFile = () => {
+    setFile(null);
+    setPreview('');
+    setError('');
+    setInputKey((k) => k + 1);
+  };
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!file) {
+      setError('Choose a photo or a video first');
+      return;
+    }
     setError('');
     setBusy(true);
     try {
-      await api.post('/posts', { imageUrl, caption });
-      setImageUrl('');
+      const data = new FormData();
+      data.append('media', file);
+      data.append('caption', caption);
+      await api.post('/posts', data);
+
+      setFile(null);
+      setPreview('');
       setCaption('');
+      setInputKey((k) => k + 1);
       onCreated();
     } catch (err) {
       setError(err.response?.data?.message || 'Could not publish your post');
@@ -27,14 +81,28 @@ export default function NewPost({ onCreated }) {
     <section className="composer">
       <form className="form" onSubmit={submit}>
         <label className="field">
-          <span>Image link</span>
+          <span>Photo or video</span>
           <input
-            placeholder="https://picsum.photos/id/10/600/400"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            required
+            key={inputKey}
+            type="file"
+            accept="image/*,video/*"
+            onChange={pickFile}
           />
         </label>
+
+        {preview && (
+          <div className="preview-wrap">
+            {isVideo ? (
+              <video className="preview" src={preview} controls playsInline muted />
+            ) : (
+              <img className="preview" src={preview} alt="Preview of your post" />
+            )}
+            <button type="button" className="btn-remove" onClick={removeFile}>
+              Remove
+            </button>
+          </div>
+        )}
+
         <label className="field">
           <span>Caption</span>
           <input
@@ -44,9 +112,11 @@ export default function NewPost({ onCreated }) {
             onChange={(e) => setCaption(e.target.value)}
           />
         </label>
+
         {error && <p className="error" role="alert">{error}</p>}
+
         <button className="btn" type="submit" disabled={busy}>
-          {busy ? 'Publishing...' : 'Publish post'}
+          {busy ? 'Uploading, please wait...' : 'Publish post'}
         </button>
       </form>
     </section>

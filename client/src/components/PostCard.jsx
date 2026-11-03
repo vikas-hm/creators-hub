@@ -68,7 +68,18 @@ export default function PostCard({ post, currentUserId }) {
         </Link>
       </div>
 
-      <img className="post-img" src={post.imageUrl} alt={post.caption || 'Post by ' + name} />
+            {post.mediaType === 'video' ? (
+        <video
+          className="post-video"
+          src={post.imageUrl}
+          controls
+          playsInline
+          loop
+          preload="metadata"
+        />
+      ) : (
+        <img className="post-img" src={post.imageUrl} alt={post.caption || 'Post by ' + name} />
+      )}
 
       <div className="post-actions">
         <button
