@@ -72,6 +72,7 @@ router.post('/', auth, handleUpload, async (req, res) => {
       user: req.userId,
       imageUrl: result.secure_url,
       mediaType: isVideo ? 'video' : 'image',
+      publicId: result.public_id,
       caption: (req.body.caption || '').slice(0, 500),
     });
 
@@ -115,6 +116,19 @@ router.get('/user/:username', async (req, res) => {
   }
 });
 
+// Reels: only video posts, newest first (anyone can see)
+router.get('/reels', async (req, res) => {
+  try {
+    const posts = await Post.find({ mediaType: 'video' })
+      .sort({ createdAt: -1 })
+      .limit(30)
+      .populate('user', 'name username avatar');
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Like or unlike a post (login needed)
 router.post('/:id/like', auth, async (req, res) => {
   try {
@@ -144,6 +158,15 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: 'You can delete only your own post' });
     }
 
+    if (post.publicId) {
+      try {
+        await cloudinary.uploader.destroy(post.publicId, { resource_type: post.mediaType });
+      } catch (err) {
+        console.log('Cloudinary delete error:', err.message);
+      }
+    }
+
+    await Comment.deleteMany({ post: post._id });
     await post.deleteOne();
     res.json({ message: 'Post deleted' });
   } catch (err) {
@@ -179,16 +202,14 @@ router.get('/:id/comments', async (req, res) => {
   }
 });
 
-// Reels: only video posts, newest first (anyone can see)
-router.get('/reels', async (req, res) => {
+// One post by id, used for share links (anyone can see). Keep this last.
+router.get('/:id', async (req, res) => {
   try {
-    const posts = await Post.find({ mediaType: 'video' })
-      .sort({ createdAt: -1 })
-      .limit(30)
-      .populate('user', 'name username avatar');
-    res.json(posts);
+    const post = await Post.findById(req.params.id).populate('user', 'name username avatar');
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    res.json(post);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(404).json({ message: 'Post not found' });
   }
 });
 

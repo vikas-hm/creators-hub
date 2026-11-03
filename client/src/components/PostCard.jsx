@@ -1,8 +1,16 @@
 import { useState } from 'react';
-import api from '../api';
 import { Link } from 'react-router-dom';
+import api from '../api';
+import { downloadUrl, sharePost } from '../utils';
+import {
+  HeartIcon,
+  CommentIcon,
+  ShareIcon,
+  DownloadIcon,
+  TrashIcon,
+} from './Icons';
 
-export default function PostCard({ post, currentUserId }) {
+export default function PostCard({ post, currentUserId, onDeleted }) {
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [count, setCount] = useState(post.likes.length);
 
@@ -10,9 +18,16 @@ export default function PostCard({ post, currentUserId }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState('');
 
   const name = post.user?.name || 'Unknown';
   const username = post.user?.username || 'unknown';
+  const isMine = post.user?._id === currentUserId;
+
+  const flash = (message) => {
+    setNotice(message);
+    setTimeout(() => setNotice(''), 2500);
+  };
 
   const toggleLike = async () => {
     try {
@@ -21,6 +36,26 @@ export default function PostCard({ post, currentUserId }) {
       setCount(res.data.likes);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const share = async () => {
+    const result = await sharePost(post._id, post.caption);
+    if (result === 'copied') flash('Link copied');
+    if (result === 'failed') flash('Could not copy the link');
+  };
+
+  const download = () => {
+    window.location.href = downloadUrl(post.imageUrl);
+  };
+
+  const remove = async () => {
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    try {
+      await api.delete('/posts/' + post._id);
+      if (onDeleted) onDeleted(post._id);
+    } catch (err) {
+      flash(err.response?.data?.message || 'Could not delete the post');
     }
   };
 
@@ -68,7 +103,7 @@ export default function PostCard({ post, currentUserId }) {
         </Link>
       </div>
 
-            {post.mediaType === 'video' ? (
+      {post.mediaType === 'video' ? (
         <video
           className="post-video"
           src={post.imageUrl}
@@ -86,13 +121,44 @@ export default function PostCard({ post, currentUserId }) {
           className={'like' + (liked ? ' on' : '')}
           onClick={toggleLike}
           aria-pressed={liked}
+          aria-label={liked ? 'Unlike' : 'Like'}
+          title={liked ? 'Unlike' : 'Like'}
         >
-          {liked ? '♥' : '♡'} {count}
+          <HeartIcon filled={liked} />
+          <span>{count}</span>
         </button>
-        <button className="like" onClick={toggleComments} aria-expanded={open}>
-          {open ? 'Hide comments' : 'Comments'}
+
+        <button
+          className="like"
+          onClick={toggleComments}
+          aria-expanded={open}
+          aria-label="Comments"
+          title="Comments"
+        >
+          <CommentIcon />
         </button>
+
+        <button className="like" onClick={share} aria-label="Share" title="Share">
+          <ShareIcon />
+        </button>
+
+        <button className="like" onClick={download} aria-label="Download" title="Download">
+          <DownloadIcon />
+        </button>
+
+        {isMine && (
+          <button
+            className="like danger push-right"
+            onClick={remove}
+            aria-label="Delete post"
+            title="Delete post"
+          >
+            <TrashIcon />
+          </button>
+        )}
       </div>
+
+      {notice && <p className="notice" role="status">{notice}</p>}
 
       {post.caption && (
         <p className="caption">

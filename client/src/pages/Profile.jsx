@@ -52,6 +52,7 @@ function ProfileView({ username }) {
   };
 
   const isMe = profile?._id === myId;
+    const removePost = (id) => setPosts((list) => list.filter((p) => p._id !== id));
 
   return (
     <div>
@@ -93,8 +94,7 @@ function ProfileView({ username }) {
             )}
 
             {posts.map((post) => (
-              <PostCard key={post._id} post={post} currentUserId={myId} />
-            ))}
+              <PostCard key={post._id} post={post} currentUserId={myId} onDeleted={removePost} />            ))}
           </>
         )}
       </main>

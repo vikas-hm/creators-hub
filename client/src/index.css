@@ -629,3 +629,57 @@ input[type='file'] {
     font-size: 14px;
   }
 }
+
+/* ---------- Share, download, delete ---------- */
+.post-actions {
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.like.danger {
+  color: #c0182f;
+}
+
+.push-right {
+  margin-left: auto;
+}
+
+.notice {
+  margin: 4px 16px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.reel-btn.text {
+  font-size: 13px;
+}
+
+.reel-notice {
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(21, 19, 43, 0.85);
+  color: #fff;
+  font-size: 14px;
+}
+/* ---------- Icon buttons ---------- */
+.like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  font-size: 15px;
+}
+
+.like svg,
+.reel-btn svg {
+  display: block;
+}
+
+.reel-btn {
+  gap: 4px;
+}

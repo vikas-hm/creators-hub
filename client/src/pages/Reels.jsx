@@ -2,11 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
+import { downloadUrl, sharePost } from '../utils';
+import {
+  HeartIcon,
+  ShareIcon,
+  DownloadIcon,
+  VolumeOnIcon,
+  VolumeOffIcon,
+} from '../components/Icons';
 
 function Reel({ post, currentUserId, muted, setMuted }) {
   const videoRef = useRef(null);
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [count, setCount] = useState(post.likes.length);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const video = videoRef.current;
@@ -40,6 +49,14 @@ function Reel({ post, currentUserId, muted, setMuted }) {
     }
   };
 
+  const share = async () => {
+    const result = await sharePost(post._id, post.caption);
+    if (result === 'copied') {
+      setNotice('Link copied');
+      setTimeout(() => setNotice(''), 2500);
+    }
+  };
+
   const username = post.user?.username || 'unknown';
 
   return (
@@ -66,14 +83,39 @@ function Reel({ post, currentUserId, muted, setMuted }) {
             className={'reel-btn' + (liked ? ' on' : '')}
             onClick={toggleLike}
             aria-pressed={liked}
+            aria-label={liked ? 'Unlike' : 'Like'}
+            title={liked ? 'Unlike' : 'Like'}
           >
-            {liked ? '♥' : '♡'}
+            <HeartIcon filled={liked} />
             <span>{count}</span>
           </button>
-          <button className="reel-btn" onClick={() => setMuted((m) => !m)}>
-            {muted ? 'Sound off' : 'Sound on'}
+
+          <button className="reel-btn" onClick={share} aria-label="Share" title="Share">
+            <ShareIcon />
+          </button>
+
+          <button
+            className="reel-btn"
+            onClick={() => {
+              window.location.href = downloadUrl(post.imageUrl);
+            }}
+            aria-label="Download"
+            title="Download"
+          >
+            <DownloadIcon />
+          </button>
+
+          <button
+            className="reel-btn"
+            onClick={() => setMuted((m) => !m)}
+            aria-label={muted ? 'Turn sound on' : 'Turn sound off'}
+            title={muted ? 'Turn sound on' : 'Turn sound off'}
+          >
+            {muted ? <VolumeOffIcon /> : <VolumeOnIcon />}
           </button>
         </div>
+
+        {notice && <p className="reel-notice" role="status">{notice}</p>}
       </div>
     </section>
   );
