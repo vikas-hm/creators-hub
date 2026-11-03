@@ -179,4 +179,17 @@ router.get('/:id/comments', async (req, res) => {
   }
 });
 
+// Reels: only video posts, newest first (anyone can see)
+router.get('/reels', async (req, res) => {
+  try {
+    const posts = await Post.find({ mediaType: 'video' })
+      .sort({ createdAt: -1 })
+      .limit(30)
+      .populate('user', 'name username avatar');
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

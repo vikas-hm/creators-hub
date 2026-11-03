@@ -14,6 +14,8 @@ export default function Topbar() {
     <header className="topbar">
       <Link to="/" className="brand">Creators Hub</Link>
       <nav className="topnav">
+        <Link to="/">Feed</Link>
+        <Link to="/reels">Reels</Link>
         <Link to={'/u/' + user?.username}>My profile</Link>
         <button className="btn-ghost" onClick={logout}>Log out</button>
       </nav>
