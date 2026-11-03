@@ -68,8 +68,7 @@ router.post('/', auth, handleUpload, async (req, res) => {
       return res.status(400).json({ message: 'Photos can be up to 10 MB' });
     }
 
-    const result = await uploadToCloudinary(req.file.buffer, isVideo ? 'video' : 'image');
-        let challengeId = null;
+    let challengeId = null;
     if (req.body.challengeId) {
       const challenge = await Challenge.findById(req.body.challengeId);
       if (!challenge || challenge.endsAt < new Date()) {
@@ -78,13 +77,15 @@ router.post('/', auth, handleUpload, async (req, res) => {
       challengeId = challenge._id;
     }
 
+    const result = await uploadToCloudinary(req.file.buffer, isVideo ? 'video' : 'image');
+
     const post = await Post.create({
       user: req.userId,
       imageUrl: result.secure_url,
       mediaType: isVideo ? 'video' : 'image',
       publicId: result.public_id,
-      caption: (req.body.caption || '').slice(0, 500),
       challenge: challengeId,
+      caption: (req.body.caption || '').slice(0, 500),
     });
 
     res.status(201).json(post);
@@ -153,7 +154,8 @@ router.post('/:id/like', auth, async (req, res) => {
       post.likes.splice(index, 1);
     }
     await post.save();
-        if (index === -1) {
+
+    if (index === -1) {
       await notify({ recipient: post.user, sender: req.userId, type: 'like', post: post._id });
     }
 
@@ -188,30 +190,92 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// Add a comment (login needed)
+// Add a comment or a reply (login needed)
 router.post('/:id/comments', auth, async (req, res) => {
   try {
-    const { text } = req.body;
+    const text = (req.body.text || '').trim().slice(0, 300);
     if (!text) return res.status(400).json({ message: 'Comment text is required' });
 
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    const comment = await Comment.create({ post: post._id, user: req.userId, text });
-    await notify({ recipient: post.user, sender: req.userId, type: 'comment', post: post._id });
+    let parentId = null;
+    let replyTo = null;
+
+    if (req.body.parentId) {
+      const target = await Comment.findById(req.body.parentId);
+      if (!target || target.post.toString() !== post._id.toString()) {
+        return res.status(400).json({ message: 'Comment not found' });
+      }
+      // Replies are one level deep: a reply to a reply stays under the main comment
+      parentId = target.parent || target._id;
+      replyTo = target.user;
+    }
+
+    const comment = await Comment.create({
+      post: post._id,
+      user: req.userId,
+      text,
+      parent: parentId,
+    });
+
+    if (replyTo) {
+      await notify({
+        recipient: replyTo,
+        sender: req.userId,
+        type: 'reply',
+        post: post._id,
+        comment: comment._id,
+      });
+    }
+
+    if (!replyTo || replyTo.toString() !== post.user.toString()) {
+      await notify({ recipient: post.user, sender: req.userId, type: 'comment', post: post._id });
+    }
+
     res.status(201).json(comment);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// See all comments of a post (anyone can see)
+// See all comments of a post, oldest first (anyone can see)
 router.get('/:id/comments', async (req, res) => {
   try {
     const comments = await Comment.find({ post: req.params.id })
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: 1 })
       .populate('user', 'name username avatar');
     res.json(comments);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Like or unlike a comment (login needed)
+router.post('/comments/:commentId/like', auth, async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+    const index = comment.likes.findIndex((id) => id.toString() === req.userId);
+    if (index === -1) {
+      comment.likes.push(req.userId);
+    } else {
+      comment.likes.splice(index, 1);
+    }
+    await comment.save();
+
+    if (index === -1) {
+      await notify({
+        recipient: comment.user,
+        sender: req.userId,
+        type: 'comment_like',
+        post: comment.post,
+        comment: comment._id,
+      });
+    }
+
+    res.json({ likes: comment.likes.length, liked: index === -1 });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

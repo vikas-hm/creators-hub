@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { downloadUrl, sharePost } from '../utils';
+import CommentSection from './CommentSection';
 import {
   HeartIcon,
   CommentIcon,
@@ -13,11 +14,7 @@ import {
 export default function PostCard({ post, currentUserId, onDeleted }) {
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [count, setCount] = useState(post.likes.length);
-
   const [open, setOpen] = useState(false);
-  const [comments, setComments] = useState([]);
-  const [text, setText] = useState('');
-  const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState('');
 
   const name = post.user?.name || 'Unknown';
@@ -56,38 +53,6 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
       if (onDeleted) onDeleted(post._id);
     } catch (err) {
       flash(err.response?.data?.message || 'Could not delete the post');
-    }
-  };
-
-  const loadComments = async () => {
-    const res = await api.get('/posts/' + post._id + '/comments');
-    setComments(res.data);
-  };
-
-  const toggleComments = async () => {
-    const next = !open;
-    setOpen(next);
-    if (next) {
-      setLoading(true);
-      try {
-        await loadComments();
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  const addComment = async (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-    try {
-      await api.post('/posts/' + post._id + '/comments', { text });
-      setText('');
-      await loadComments();
-    } catch (err) {
-      console.log(err);
     }
   };
 
@@ -130,7 +95,7 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
 
         <button
           className="like"
-          onClick={toggleComments}
+          onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           aria-label="Comments"
           title="Comments"
@@ -166,29 +131,7 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
         </p>
       )}
 
-      {open && (
-        <div className="comments">
-          {loading && <p className="muted-line">Loading comments...</p>}
-          {!loading && comments.length === 0 && (
-            <p className="muted-line">No comments yet. Be the first to give feedback.</p>
-          )}
-          {comments.map((c) => (
-            <p className="comment" key={c._id}>
-              <strong>{c.user?.username || 'unknown'}</strong> {c.text}
-            </p>
-          ))}
-          <form className="comment-form" onSubmit={addComment}>
-            <input
-              placeholder="Write feedback..."
-              value={text}
-              maxLength={300}
-              onChange={(e) => setText(e.target.value)}
-              aria-label="Write a comment"
-            />
-            <button className="btn" type="submit">Post</button>
-          </form>
-        </div>
-      )}
+      {open && <CommentSection postId={post._id} />}
     </article>
   );
 }

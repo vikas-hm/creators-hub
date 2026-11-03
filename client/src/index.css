@@ -808,3 +808,55 @@ input[type='file'] {
   object-fit: cover;
   border-radius: 8px;
 }
+/* ---------- Comment likes and replies ---------- */
+.comment.reply {
+  margin-left: 28px;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+}
+
+.comment-text {
+  margin: 0;
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 2px;
+}
+
+.mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mini svg {
+  width: 16px;
+  height: 16px;
+}
+
+.mini:hover {
+  color: var(--text);
+}
+
+.mini.on {
+  color: var(--pink-deep);
+}
+
+.replying {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}

@@ -7,6 +7,8 @@ const texts = {
   like: 'liked your post',
   comment: 'commented on your post',
   follow: 'started following you',
+  reply: 'replied to your comment',
+  comment_like: 'liked your comment',
 };
 
 export default function Notifications() {
