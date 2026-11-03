@@ -419,3 +419,63 @@ a:hover {
 .comment-form .btn {
   padding: 0 18px;
 }
+
+/* ---------- Top bar and profile ---------- */
+.topbar .brand {
+  color: #fff;
+  text-decoration: none;
+}
+
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.topnav a {
+  color: #fff;
+}
+
+.post-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+}
+
+.post-user:hover {
+  text-decoration: none;
+}
+
+.profile-head {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.avatar.big {
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+  font-size: 34px;
+}
+
+.profile-info p {
+  margin: 4px 0;
+}
+
+.stats strong {
+  margin-left: 14px;
+  margin-right: 4px;
+}
+
+.stats strong:first-child {
+  margin-left: 0;
+}
+
+.btn.follow {
+  width: auto;
+  margin-top: 10px;
+  padding: 9px 22px;
+}

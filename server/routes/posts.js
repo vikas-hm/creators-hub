@@ -1,6 +1,7 @@
 const express = require('express');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -95,6 +96,20 @@ router.get('/:id/comments', async (req, res) => {
       .sort({ createdAt: -1 })
       .populate('user', 'name username avatar');
     res.json(comments);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+// All posts of one user (anyone can see)
+router.get('/user/:username', async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username.toLowerCase() });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const posts = await Post.find({ user: user._id })
+      .sort({ createdAt: -1 })
+      .populate('user', 'name username avatar');
+    res.json(posts);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

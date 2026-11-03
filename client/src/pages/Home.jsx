@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import api from '../api';
+import Topbar from '../components/Topbar';
 import NewPost from '../components/NewPost';
 import PostCard from '../components/PostCard';
 
 export default function Home() {
-  const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Used after publishing a new post
   const refreshPosts = async () => {
     try {
       const res = await api.get('/posts');
@@ -22,7 +21,6 @@ export default function Home() {
     }
   };
 
-  // Loads the posts when the page opens
   useEffect(() => {
     if (!token) return;
     let ignore = false;
@@ -44,18 +42,9 @@ export default function Home() {
 
   if (!token) return <Navigate to="/login" />;
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
-
   return (
     <div>
-      <header className="topbar">
-        <div className="brand">Creators Hub</div>
-        <button className="btn-ghost" onClick={logout}>Log out</button>
-      </header>
+      <Topbar />
 
       <main className="home-main">
         <h2>Hi, {user?.name}</h2>

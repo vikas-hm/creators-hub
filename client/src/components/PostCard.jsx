@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from '../api';
+import { Link } from 'react-router-dom';
 
 export default function PostCard({ post, currentUserId }) {
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
@@ -58,11 +59,13 @@ export default function PostCard({ post, currentUserId }) {
   return (
     <article className="post">
       <div className="post-head">
-        <div className="avatar">{name[0]}</div>
-        <div>
-          <strong>{name}</strong>
-          <span className="muted">@{username}</span>
-        </div>
+        <Link className="post-user" to={'/u/' + username}>
+          <div className="avatar">{name[0]}</div>
+          <div>
+            <strong>{name}</strong>
+            <span className="muted">@{username}</span>
+          </div>
+        </Link>
       </div>
 
       <img className="post-img" src={post.imageUrl} alt={post.caption || 'Post by ' + name} />
