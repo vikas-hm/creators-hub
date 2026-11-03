@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import Reels from './pages/Reels';
 import PostPage from './pages/Post';
+import Challenge from './pages/Challenge';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/u/:username" element={<Profile />} />
       <Route path="/reels" element={<Reels />} />
       <Route path="/p/:id" element={<PostPage />} />
+      <Route path="/challenge" element={<Challenge />} />
     </Routes>
   );
 }

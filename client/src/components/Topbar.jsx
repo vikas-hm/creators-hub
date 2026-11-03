@@ -16,6 +16,7 @@ export default function Topbar() {
       <nav className="topnav">
         <Link to="/">Feed</Link>
         <Link to="/reels">Reels</Link>
+        <Link to="/challenge">Challenge</Link>
         <Link to={'/u/' + user?.username}>My profile</Link>
         <button className="btn-ghost" onClick={logout}>Log out</button>
       </nav>

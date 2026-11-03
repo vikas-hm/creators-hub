@@ -11,6 +11,23 @@ export default function NewPost({ onCreated }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [inputKey, setInputKey] = useState(0);
+  const [challenge, setChallenge] = useState(null);
+  const [enter, setEnter] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    api
+      .get('/challenges/current')
+      .then((res) => {
+        if (!ignore && res.data.challenge && res.data.active) {
+          setChallenge(res.data.challenge);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -44,7 +61,8 @@ export default function NewPost({ onCreated }) {
     setFile(f);
     setPreview(URL.createObjectURL(f));
   };
-    const removeFile = () => {
+
+  const removeFile = () => {
     setFile(null);
     setPreview('');
     setError('');
@@ -63,11 +81,13 @@ export default function NewPost({ onCreated }) {
       const data = new FormData();
       data.append('media', file);
       data.append('caption', caption);
+      if (enter && challenge) data.append('challengeId', challenge._id);
       await api.post('/posts', data);
 
       setFile(null);
       setPreview('');
       setCaption('');
+      setEnter(false);
       setInputKey((k) => k + 1);
       onCreated();
     } catch (err) {
@@ -112,6 +132,19 @@ export default function NewPost({ onCreated }) {
             onChange={(e) => setCaption(e.target.value)}
           />
         </label>
+
+        {challenge && (
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={enter}
+              onChange={(e) => setEnter(e.target.checked)}
+            />
+            <span>
+              Enter this week's challenge: <strong>{challenge.title}</strong>
+            </span>
+          </label>
+        )}
 
         {error && <p className="error" role="alert">{error}</p>}
 

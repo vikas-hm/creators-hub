@@ -5,6 +5,7 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const cloudinary = require('../config/cloudinary');
+const Challenge = require('../models/Challenge');
 
 const router = express.Router();
 
@@ -67,6 +68,14 @@ router.post('/', auth, handleUpload, async (req, res) => {
     }
 
     const result = await uploadToCloudinary(req.file.buffer, isVideo ? 'video' : 'image');
+        let challengeId = null;
+    if (req.body.challengeId) {
+      const challenge = await Challenge.findById(req.body.challengeId);
+      if (!challenge || challenge.endsAt < new Date()) {
+        return res.status(400).json({ message: 'This challenge has ended' });
+      }
+      challengeId = challenge._id;
+    }
 
     const post = await Post.create({
       user: req.userId,
@@ -74,6 +83,7 @@ router.post('/', auth, handleUpload, async (req, res) => {
       mediaType: isVideo ? 'video' : 'image',
       publicId: result.public_id,
       caption: (req.body.caption || '').slice(0, 500),
+      challenge: challengeId,
     });
 
     res.status(201).json(post);
