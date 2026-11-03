@@ -383,3 +383,39 @@ a:hover {
   margin: 0;
   padding: 6px 16px 16px;
 }
+.post-actions {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.comments {
+  border-top: 1px solid var(--line);
+  padding: 14px 16px 16px;
+}
+
+.comment {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.muted-line {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.comment-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-form .btn {
+  padding: 0 18px;
+}

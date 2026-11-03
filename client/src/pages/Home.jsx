@@ -12,20 +12,35 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadPosts = async () => {
+  // Used after publishing a new post
+  const refreshPosts = async () => {
     try {
       const res = await api.get('/posts');
       setPosts(res.data);
     } catch (err) {
       console.log(err);
-    } finally {
-      setLoading(false);
     }
   };
 
+  // Loads the posts when the page opens
   useEffect(() => {
-    if (token) loadPosts();
-  }, []);
+    if (!token) return;
+    let ignore = false;
+
+    api
+      .get('/posts')
+      .then((res) => {
+        if (!ignore) setPosts(res.data);
+      })
+      .catch((err) => console.log(err))
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
 
   if (!token) return <Navigate to="/login" />;
 
@@ -46,7 +61,7 @@ export default function Home() {
         <h2>Hi, {user?.name}</h2>
         <p className="sub">@{user?.username}</p>
 
-        <NewPost onCreated={loadPosts} />
+        <NewPost onCreated={refreshPosts} />
 
         {loading && <p className="sub" style={{ marginTop: 24 }}>Loading posts...</p>}
 
