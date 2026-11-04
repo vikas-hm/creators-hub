@@ -11,6 +11,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/challenges', require('./routes/challenges'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/messages', require('./routes/messages'));
 
 app.get('/', (req, res) => {
   res.send('Creators Hub API is running');
@@ -25,4 +27,4 @@ mongoose
     });
   })
   .catch((err) => console.log('Connection error:', err.message));
-  app.use('/api/notifications', require('./routes/notifications'));
+  
