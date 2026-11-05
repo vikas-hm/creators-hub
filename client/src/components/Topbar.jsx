@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { BellIcon, MailIcon, SearchIcon } from './Icons';
+import { BellIcon, MailIcon, SearchIcon, SettingsIcon } from './Icons';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -60,6 +60,9 @@ export default function Topbar() {
         <Link to="/notifications" className="bell" aria-label="Notifications" title="Notifications">
           <BellIcon />
           {unread > 0 && <span className="badge">{unread > 9 ? '9+' : unread}</span>}
+        </Link>
+        <Link to="/settings" className="bell" aria-label="Settings" title="Settings">
+          <SettingsIcon />
         </Link>
         <button className="btn-ghost" onClick={logout}>Log out</button>
       </nav>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
+import Avatar from '../components/Avatar';
 
 export default function Search() {
   const token = localStorage.getItem('token');
@@ -59,7 +60,7 @@ export default function Search() {
 
         {shown.map((u) => (
           <Link key={u._id} className="notif" to={'/u/' + u.username}>
-            <div className="avatar">{u.name[0]}</div>
+            <Avatar user={u} />
             <div className="notif-text">
               <strong>{u.name}</strong>
               <small>@{u.username}{u.bio ? ' · ' + u.bio : ''}</small>

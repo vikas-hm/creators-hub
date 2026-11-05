@@ -4,7 +4,14 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// In production set CLIENT_URL to your website address. Locally it allows everything.
+const allowed = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use(cors({ origin: allowed.length ? allowed : true }));
 app.use(express.json());
 
 app.use('/api/auth', require('./routes/auth'));
@@ -22,9 +29,9 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
-    app.listen(process.env.PORT, () => {
-      console.log('Server running on port ' + process.env.PORT);
+    const port = process.env.PORT || 5000;
+    app.listen(port, () => {
+      console.log('Server running on port ' + port);
     });
   })
   .catch((err) => console.log('Connection error:', err.message));
-  

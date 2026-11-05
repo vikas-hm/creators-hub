@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
+import Avatar from '../components/Avatar';
 
 function SharedPost({ post }) {
   if (!post) return <p className="shared-gone">This post is no longer available</p>;
@@ -95,7 +96,7 @@ function ChatView({ username }) {
             <div className="chat-head">
               <Link to="/messages" aria-label="Back to messages">Back</Link>
               <Link to={'/u/' + other.username} className="chat-name">
-                <span className="avatar small">{other.name[0]}</span>
+                <Avatar user={other} size="small" />
                 <strong>{other.name}</strong>
                 <span className="muted">@{other.username}</span>
               </Link>

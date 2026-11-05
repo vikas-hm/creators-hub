@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import PostCard from '../components/PostCard';
+import Avatar from '../components/Avatar';
 import { MailIcon } from '../components/Icons';
 
 function ProfileView({ username }) {
@@ -52,8 +53,9 @@ function ProfileView({ username }) {
     }
   };
 
+  const removePost = (id) => setPosts((list) => list.filter((p) => p._id !== id));
+
   const isMe = profile?._id === myId;
-    const removePost = (id) => setPosts((list) => list.filter((p) => p._id !== id));
 
   return (
     <div>
@@ -70,7 +72,7 @@ function ProfileView({ username }) {
         {status === 'ready' && (
           <>
             <section className="profile-head">
-              <div className="avatar big">{profile.name[0]}</div>
+              <Avatar user={profile} size="big" />
               <div className="profile-info">
                 <h2>{profile.name}</h2>
                 <p className="sub">@{profile.username}</p>
@@ -80,6 +82,7 @@ function ProfileView({ username }) {
                   <strong>{followers}</strong> followers
                   <strong>{profile.following.length}</strong> following
                 </p>
+
                 {!isMe && (
                   <div className="profile-buttons">
                     <button className="btn follow" onClick={toggleFollow}>
@@ -89,6 +92,12 @@ function ProfileView({ username }) {
                       <MailIcon />
                       Message
                     </Link>
+                  </div>
+                )}
+
+                {isMe && (
+                  <div className="profile-buttons">
+                    <Link className="btn message-btn" to="/settings">Edit profile</Link>
                   </div>
                 )}
               </div>
@@ -101,7 +110,8 @@ function ProfileView({ username }) {
             )}
 
             {posts.map((post) => (
-              <PostCard key={post._id} post={post} currentUserId={myId} onDeleted={removePost} />            ))}
+              <PostCard key={post._id} post={post} currentUserId={myId} onDeleted={removePost} />
+            ))}
           </>
         )}
       </main>

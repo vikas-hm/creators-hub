@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
-import { downloadUrl, sharePost } from '../utils';
+import ShareSheet from '../components/ShareSheet';
+import { downloadUrl } from '../utils';
 import {
   HeartIcon,
-  ShareIcon,
+  SendIcon,
   DownloadIcon,
   VolumeOnIcon,
   VolumeOffIcon,
@@ -15,7 +16,7 @@ function Reel({ post, currentUserId, muted, setMuted }) {
   const videoRef = useRef(null);
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [count, setCount] = useState(post.likes.length);
-  const [notice, setNotice] = useState('');
+  const [sheet, setSheet] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -46,14 +47,6 @@ function Reel({ post, currentUserId, muted, setMuted }) {
       setCount(res.data.likes);
     } catch (err) {
       console.log(err);
-    }
-  };
-
-  const share = async () => {
-    const result = await sharePost(post._id, post.caption);
-    if (result === 'copied') {
-      setNotice('Link copied');
-      setTimeout(() => setNotice(''), 2500);
     }
   };
 
@@ -90,8 +83,13 @@ function Reel({ post, currentUserId, muted, setMuted }) {
             <span>{count}</span>
           </button>
 
-          <button className="reel-btn" onClick={share} aria-label="Share" title="Share">
-            <ShareIcon />
+          <button
+            className="reel-btn"
+            onClick={() => setSheet(true)}
+            aria-label="Share"
+            title="Share"
+          >
+            <SendIcon />
           </button>
 
           <button
@@ -115,7 +113,7 @@ function Reel({ post, currentUserId, muted, setMuted }) {
           </button>
         </div>
 
-        {notice && <p className="reel-notice" role="status">{notice}</p>}
+        {sheet && <ShareSheet postId={post._id} onClose={() => setSheet(false)} />}
       </div>
     </section>
   );

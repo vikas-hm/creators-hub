@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
+import Avatar from '../components/Avatar';
 
 const texts = {
   like: 'liked your post',
@@ -59,7 +60,7 @@ export default function Notifications() {
             className={'notif' + (n.read ? '' : ' unread')}
             to={n.post ? '/p/' + n.post._id : '/u/' + n.sender.username}
           >
-            <div className="avatar">{n.sender.name[0]}</div>
+            <Avatar user={n.sender} />
             <div className="notif-text">
               <span>
                 <strong>{n.sender.username}</strong> {texts[n.type] || 'did something'}

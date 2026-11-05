@@ -11,6 +11,7 @@ import Notifications from './pages/Notifications';
 import Messages from './pages/Messages';
 import Chat from './pages/Chat';
 import Search from './pages/Search';
+import Settings from './pages/Settings';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
       <Route path="/messages" element={<Messages />} />
       <Route path="/messages/:username" element={<Chat />} />
       <Route path="/search" element={<Search />} />
+      <Route path="/settings" element={<Settings />} />
     </Routes>
   );
 }

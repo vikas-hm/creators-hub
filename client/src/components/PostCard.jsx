@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
-import { downloadUrl, sharePost } from '../utils';
+import { downloadUrl } from '../utils';
 import CommentSection from './CommentSection';
+import ShareSheet from './ShareSheet';
+import Avatar from './Avatar';
 import {
   HeartIcon,
   CommentIcon,
-  ShareIcon,
+  SendIcon,
   DownloadIcon,
   TrashIcon,
 } from './Icons';
@@ -15,6 +17,7 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [count, setCount] = useState(post.likes.length);
   const [open, setOpen] = useState(false);
+  const [sheet, setSheet] = useState(false);
   const [notice, setNotice] = useState('');
 
   const name = post.user?.name || 'Unknown';
@@ -36,12 +39,6 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
     }
   };
 
-  const share = async () => {
-    const result = await sharePost(post._id, post.caption);
-    if (result === 'copied') flash('Link copied');
-    if (result === 'failed') flash('Could not copy the link');
-  };
-
   const download = () => {
     window.location.href = downloadUrl(post.imageUrl);
   };
@@ -60,7 +57,7 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
     <article className="post">
       <div className="post-head">
         <Link className="post-user" to={'/u/' + username}>
-          <div className="avatar">{name[0]}</div>
+          <Avatar user={post.user} />
           <div>
             <strong>{name}</strong>
             <span className="muted">@{username}</span>
@@ -103,8 +100,13 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
           <CommentIcon />
         </button>
 
-        <button className="like" onClick={share} aria-label="Share" title="Share">
-          <ShareIcon />
+        <button
+          className="like"
+          onClick={() => setSheet(true)}
+          aria-label="Share"
+          title="Share"
+        >
+          <SendIcon />
         </button>
 
         <button className="like" onClick={download} aria-label="Download" title="Download">
@@ -132,6 +134,8 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
       )}
 
       {open && <CommentSection postId={post._id} />}
+
+      {sheet && <ShareSheet postId={post._id} onClose={() => setSheet(false)} />}
     </article>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
+import Avatar from '../components/Avatar';
 
 export default function Messages() {
   const token = localStorage.getItem('token');
@@ -67,7 +68,7 @@ export default function Messages() {
 
         {results.map((u) => (
           <Link key={u._id} className="notif" to={'/messages/' + u.username}>
-            <div className="avatar">{u.name[0]}</div>
+            <Avatar user={u} />
             <div className="notif-text">
               <strong>{u.name}</strong>
               <small>@{u.username}</small>
@@ -90,7 +91,7 @@ export default function Messages() {
               className={'notif' + (c.unread > 0 ? ' unread' : '')}
               to={'/messages/' + c.user.username}
             >
-              <div className="avatar">{c.user.name[0]}</div>
+              <Avatar user={c.user} />
               <div className="notif-text">
                 <strong>{c.user.name}</strong>
                 <small>
