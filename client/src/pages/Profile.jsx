@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import PostCard from '../components/PostCard';
+import { MailIcon } from '../components/Icons';
 
 function ProfileView({ username }) {
   const token = localStorage.getItem('token');
@@ -80,9 +81,15 @@ function ProfileView({ username }) {
                   <strong>{profile.following.length}</strong> following
                 </p>
                 {!isMe && (
-                  <button className="btn follow" onClick={toggleFollow}>
-                    {following ? 'Unfollow' : 'Follow'}
-                  </button>
+                  <div className="profile-buttons">
+                    <button className="btn follow" onClick={toggleFollow}>
+                      {following ? 'Unfollow' : 'Follow'}
+                    </button>
+                    <Link className="btn message-btn" to={'/messages/' + profile.username}>
+                      <MailIcon />
+                      Message
+                    </Link>
+                  </div>
                 )}
               </div>
             </section>

@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String, default: '' },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+    // Password reset fields. select:false keeps them out of normal responses.
+    resetOtp: { type: String, default: '', select: false },
+    resetExpires: { type: Date, select: false },
+    resetAttempts: { type: Number, default: 0, select: false },
+    resetSentAt: { type: Date, select: false },
   },
   { timestamps: true }
 );

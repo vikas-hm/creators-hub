@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { BellIcon, MailIcon } from './Icons';
+import { BellIcon, MailIcon, SearchIcon } from './Icons';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -50,6 +50,9 @@ export default function Topbar() {
         <Link to="/reels">Reels</Link>
         <Link to="/challenge">Challenge</Link>
         <Link to={'/u/' + user?.username}>My profile</Link>
+        <Link to="/search" className="bell" aria-label="Search people" title="Search people">
+          <SearchIcon />
+        </Link>
         <Link to="/messages" className="bell" aria-label="Messages" title="Messages">
           <MailIcon />
           {unreadMsgs > 0 && <span className="badge">{unreadMsgs > 9 ? '9+' : unreadMsgs}</span>}

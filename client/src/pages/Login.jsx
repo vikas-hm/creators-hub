@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 import AuthLayout from '../components/AuthLayout';
 
@@ -7,6 +7,8 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const success = location.state?.message;
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -37,6 +39,8 @@ export default function Login() {
           <span>Password</span>
           <input name="password" type="password" placeholder="Your password" value={form.password} onChange={handleChange} required />
         </label>
+        <Link className="forgot" to="/forgot-password">Forgot password?</Link>
+        {success && <p className="success" role="status">{success}</p>}
         {error && <p className="error" role="alert">{error}</p>}
         <button className="btn" type="submit">Log in</button>
       </form>

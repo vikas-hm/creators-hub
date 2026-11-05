@@ -2,7 +2,30 @@ const express = require('express');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const notify = require('../utils/notify');
+
 const router = express.Router();
+
+// Search users by name or username (login needed). Keep this above /:username
+router.get('/search', auth, async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json([]);
+
+    const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const users = await User.find({
+      $or: [
+        { username: { $regex: safe, $options: 'i' } },
+        { name: { $regex: safe, $options: 'i' } },
+      ],
+    })
+      .select('name username avatar bio')
+      .limit(20);
+
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Get my profile (login needed)
 router.get('/me', auth, async (req, res) => {
@@ -33,7 +56,9 @@ router.put('/me', auth, async (req, res) => {
 // Anyone can see a public profile
 router.get('/:username', async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.params.username.toLowerCase() }).select('-password -email');
+    const user = await User.findOne({ username: req.params.username.toLowerCase() }).select(
+      '-password -email'
+    );
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (err) {
@@ -63,12 +88,15 @@ router.post('/:id/follow', auth, async (req, res) => {
       await User.findByIdAndUpdate(req.userId, { $addToSet: { following: targetId } });
       await User.findByIdAndUpdate(targetId, { $addToSet: { followers: req.userId } });
     }
+
     if (!alreadyFollowing) {
       await notify({ recipient: targetId, sender: req.userId, type: 'follow' });
     }
+
     res.json({ following: !alreadyFollowing });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 module.exports = router;

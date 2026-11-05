@@ -1013,3 +1013,63 @@ input[type='file'] {
 .sendbox-user:hover {
   background: #fff1f6;
 }
+
+/* ---------- Profile buttons, forgot password ---------- */
+.profile-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.profile-buttons .btn.follow {
+  margin-top: 0;
+}
+
+.btn.message-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  padding: 9px 18px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn.message-btn:hover {
+  background: var(--ink-2);
+  text-decoration: none;
+}
+
+.btn.message-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.forgot {
+  align-self: flex-end;
+  font-size: 14px;
+}
+
+.success {
+  margin: 0;
+  color: #0a7a4b;
+  font-size: 14px;
+}
+
+.otp-input {
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 8px;
+}
+
+.link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--pink-deep);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
