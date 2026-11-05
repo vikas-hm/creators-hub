@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import Avatar from '../components/Avatar';
@@ -9,6 +9,7 @@ const empty = { text: '', error: false };
 
 export default function Settings() {
   const token = localStorage.getItem('token');
+  const navigate = useNavigate();
   const fileRef = useRef(null);
 
   const [me, setMe] = useState(null);
@@ -21,6 +22,9 @@ export default function Settings() {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [delPassword, setDelPassword] = useState('');
+  const [delMsg, setDelMsg] = useState(empty);
+  const [delBusy, setDelBusy] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -139,6 +143,30 @@ export default function Settings() {
         text: err.response?.data?.message || 'Could not change the password',
         error: true,
       });
+    }
+  };
+
+  const deleteAccount = async (e) => {
+    e.preventDefault();
+    setDelMsg(empty);
+
+    const sure = window.confirm(
+      'Delete your account forever? Your profile, posts, comments, likes, followers and messages will be removed. This cannot be undone.'
+    );
+    if (!sure) return;
+
+    setDelBusy(true);
+    try {
+      await api.delete('/users/me', { data: { password: delPassword } });
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login', { state: { message: 'Your account has been deleted.' } });
+    } catch (err) {
+      setDelMsg({
+        text: err.response?.data?.message || 'Could not delete your account',
+        error: true,
+      });
+      setDelBusy(false);
     }
   };
 
@@ -263,6 +291,33 @@ export default function Settings() {
                   </p>
                 )}
                 <button className="btn" type="submit">Change password</button>
+              </form>
+            </section>
+
+            <section className="composer settings-card danger-zone">
+              <h3>Delete account</h3>
+              <p className="muted-line">
+                This removes your profile, posts, comments, likes, followers and messages for
+                good. It cannot be undone.
+              </p>
+              <form className="form" onSubmit={deleteAccount}>
+                <label className="field">
+                  <span>Enter your password to confirm</span>
+                  <input
+                    type="password"
+                    value={delPassword}
+                    onChange={(e) => setDelPassword(e.target.value)}
+                    required
+                  />
+                </label>
+                {delMsg.text && (
+                  <p className={delMsg.error ? 'error' : 'success'} role="alert">
+                    {delMsg.text}
+                  </p>
+                )}
+                <button className="btn danger-btn" type="submit" disabled={delBusy}>
+                  {delBusy ? 'Deleting...' : 'Delete my account'}
+                </button>
               </form>
             </section>
           </>

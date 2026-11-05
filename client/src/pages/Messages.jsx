@@ -97,6 +97,7 @@ export default function Messages() {
                 <small>
                   {c.last.mine ? 'You: ' : ''}
                   {c.last.text || 'Shared a post'}
+                  {c.last.mine && c.last.read ? ' · Seen' : ''}
                 </small>
               </div>
               {c.unread > 0 && <span className="badge inline">{c.unread}</span>}

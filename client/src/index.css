@@ -1381,3 +1381,59 @@ img.avatar {
     border-radius: 18px;
   }
 }
+
+/* ---------- Seen ticks, chat delete, delete account ---------- */
+.msg-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.msg-wrap .bubble.mine {
+  align-self: flex-end;
+}
+
+.msg-wrap .bubble.theirs {
+  align-self: flex-start;
+}
+
+.ticks {
+  display: inline-flex;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.ticks svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ticks.seen {
+  color: #6fe3d6;
+}
+
+.seen-label {
+  align-self: flex-end;
+  margin: 2px 4px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.mini.danger {
+  color: #c0182f;
+}
+
+.mini.danger:hover {
+  color: #8f1022;
+}
+
+.danger-zone {
+  border-color: #f2b8c0;
+}
+
+.btn.danger-btn {
+  background: #c0182f;
+}
+
+.btn.danger-btn:hover {
+  background: #8f1022;
+}

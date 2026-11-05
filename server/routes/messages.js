@@ -7,6 +7,14 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Messages in both directions between two users
+const between = (a, b) => ({
+  $or: [
+    { sender: a, recipient: b },
+    { sender: b, recipient: a },
+  ],
+});
+
 // Find people to message
 router.get('/search', auth, async (req, res) => {
   try {
@@ -30,7 +38,11 @@ router.get('/search', auth, async (req, res) => {
 // Number of unread messages (for the top bar)
 router.get('/unread-count', auth, async (req, res) => {
   try {
-    const count = await Message.countDocuments({ recipient: req.userId, read: false });
+    const count = await Message.countDocuments({
+      recipient: req.userId,
+      read: false,
+      deletedFor: { $ne: req.userId },
+    });
     res.json({ count });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -41,7 +53,10 @@ router.get('/unread-count', auth, async (req, res) => {
 router.get('/conversations', auth, async (req, res) => {
   try {
     const me = req.userId;
-    const msgs = await Message.find({ $or: [{ sender: me }, { recipient: me }] })
+    const msgs = await Message.find({
+      $or: [{ sender: me }, { recipient: me }],
+      deletedFor: { $ne: me },
+    })
       .sort({ createdAt: -1 })
       .limit(500)
       .populate('sender', 'name username avatar')
@@ -58,7 +73,13 @@ router.get('/conversations', auth, async (req, res) => {
       if (!map.has(key)) {
         map.set(key, {
           user: other,
-          last: { text: m.text, hasPost: !!m.post, mine, createdAt: m.createdAt },
+          last: {
+            text: m.text,
+            hasPost: !!m.post,
+            mine,
+            read: m.read,
+            createdAt: m.createdAt,
+          },
           unread: 0,
         });
       }
@@ -71,19 +92,17 @@ router.get('/conversations', auth, async (req, res) => {
   }
 });
 
-// Messages between me and one user. Also marks their messages as read.
+// Messages between me and one user. Also marks their messages as seen.
 router.get('/with/:username', auth, async (req, res) => {
   try {
+    const me = req.userId;
     const other = await User.findOne({ username: req.params.username.toLowerCase() }).select(
       'name username avatar'
     );
     if (!other) return res.status(404).json({ message: 'User not found' });
 
     const messages = await Message.find({
-      $or: [
-        { sender: req.userId, recipient: other._id },
-        { sender: other._id, recipient: req.userId },
-      ],
+      $and: [between(me, other._id), { deletedFor: { $ne: me } }],
     })
       .sort({ createdAt: 1 })
       .limit(200)
@@ -94,11 +113,31 @@ router.get('/with/:username', auth, async (req, res) => {
       });
 
     await Message.updateMany(
-      { sender: other._id, recipient: req.userId, read: false },
-      { read: true }
+      { sender: other._id, recipient: me, read: false },
+      { read: true, readAt: new Date() }
     );
 
     res.json({ user: other, messages });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete a whole chat for me only
+router.delete('/with/:username', auth, async (req, res) => {
+  try {
+    const me = req.userId;
+    const other = await User.findOne({ username: req.params.username.toLowerCase() });
+    if (!other) return res.status(404).json({ message: 'User not found' });
+
+    await Message.updateMany(between(me, other._id), { $addToSet: { deletedFor: me } });
+
+    // When both people have deleted a message, remove it for real
+    await Message.deleteMany({
+      $and: [between(me, other._id), { deletedFor: { $all: [me, other._id] } }],
+    });
+
+    res.json({ message: 'Chat deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

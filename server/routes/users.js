@@ -2,6 +2,10 @@ const express = require('express');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Post = require('../models/Post');
+const Comment = require('../models/Comment');
+const Notification = require('../models/Notification');
+const Message = require('../models/Message');
 const auth = require('../middleware/auth');
 const notify = require('../utils/notify');
 const cloudinary = require('../config/cloudinary');
@@ -195,6 +199,80 @@ router.post('/me/password', auth, async (req, res) => {
 
     res.json({ message: 'Password changed' });
   } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete my account for good (login needed, password required)
+router.delete('/me', auth, async (req, res) => {
+  try {
+    const password = req.body && req.body.password;
+    if (!password) return res.status(400).json({ message: 'Enter your password' });
+
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(400).json({ message: 'Password is wrong' });
+
+    const me = user._id;
+
+    // 1. My posts: remove their files from Cloudinary
+    const myPosts = await Post.find({ user: me }).select('publicId mediaType');
+    await Promise.allSettled(
+      myPosts
+        .filter((p) => p.publicId)
+        .map((p) => cloudinary.uploader.destroy(p.publicId, { resource_type: p.mediaType }))
+    );
+    const postIds = myPosts.map((p) => p._id);
+
+    // 2. Comments on my posts, my own comments, and replies to my comments
+    const myComments = await Comment.find({ user: me }).select('_id');
+    const myCommentIds = myComments.map((c) => c._id);
+
+    await Comment.deleteMany({
+      $or: [
+        { post: { $in: postIds } },
+        { user: me },
+        { parent: { $in: myCommentIds } },
+      ],
+    });
+    await Post.deleteMany({ user: me });
+
+    // 3. My likes on other posts and comments
+    await Post.updateMany({ likes: me }, { $pull: { likes: me } });
+    await Comment.updateMany({ likes: me }, { $pull: { likes: me } });
+
+    // 4. Follow links in both directions
+    await User.updateMany({ followers: me }, { $pull: { followers: me } });
+    await User.updateMany({ following: me }, { $pull: { following: me } });
+
+    // 5. Notifications and messages
+    await Notification.deleteMany({
+      $or: [
+        { sender: me },
+        { recipient: me },
+        { post: { $in: postIds } },
+        { comment: { $in: myCommentIds } },
+      ],
+    });
+    await Message.deleteMany({ $or: [{ sender: me }, { recipient: me }] });
+
+    // 6. My profile photo, then the account itself
+    if (user.avatarId) {
+      try {
+        await cloudinary.uploader.destroy(user.avatarId);
+      } catch (err) {
+        console.log('Avatar delete error:', err.message);
+      }
+    }
+
+    await user.deleteOne();
+    console.log('Account deleted:', user.username);
+
+    res.json({ message: 'Account deleted' });
+  } catch (err) {
+    console.log('Delete account error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
