@@ -12,6 +12,12 @@ export default function Settings() {
   const navigate = useNavigate();
   const fileRef = useRef(null);
 
+    const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
   const [me, setMe] = useState(null);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
@@ -174,7 +180,12 @@ export default function Settings() {
     <div>
       <Topbar />
       <main className="home-main">
-        <h2>Settings</h2>
+        <div className="page-title-row">
+          <h2>Settings</h2>
+          <button type="button" className="btn-outline neutral" onClick={logout}>
+            Log out
+          </button>
+        </div>
 
         {!me && <p className="sub">Loading...</p>}
 

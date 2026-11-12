@@ -1437,3 +1437,255 @@ img.avatar {
 .btn.danger-btn:hover {
   background: #8f1022;
 }
+
+/* ---------- Navigation: bottom bar on phone, sidebar on laptop ---------- */
+body:has(.navbar) {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+
+body:has(.reels-page) {
+  padding-bottom: 0;
+}
+
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 14px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.appbar .brand {
+  color: #fff;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.appbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 16px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-item svg {
+  width: 26px;
+  height: 26px;
+}
+
+.nav-item:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-item.active {
+  color: var(--pink-deep);
+}
+
+.nav-item.active svg {
+  stroke-width: 2.6;
+}
+
+.appbar .nav-item {
+  color: #fff;
+}
+
+.appbar .nav-item svg {
+  width: 24px;
+  height: 24px;
+}
+
+.appbar .nav-item.active {
+  color: var(--pink);
+}
+
+.navbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: calc(60px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.navbar .nav-item {
+  flex: 1;
+  height: 60px;
+}
+
+.navbar .nav-label,
+.navbar .nav-brand,
+.navbar .nav-spacer,
+.navbar .desk-only {
+  display: none;
+}
+
+.nav-badge {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  margin-left: 6px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--pink-deep);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.avatar.nav {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+
+.nav-item.active .avatar {
+  outline: 2px solid var(--pink-deep);
+  outline-offset: 2px;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-outline.neutral {
+  color: var(--text);
+}
+
+/* Reels fit between the top bar and the bottom bar */
+.reels-page .reels {
+  height: calc(100vh - 116px);
+  height: calc(100dvh - 56px - 60px - env(safe-area-inset-bottom));
+}
+
+/* Phone and tablet spacing */
+@media (max-width: 899px) {
+  .home-main {
+    margin-top: 20px;
+  }
+}
+
+/* Tablet: roomier bottom bar */
+@media (min-width: 600px) and (max-width: 899px) {
+  .navbar {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+/* Laptop: left sidebar like Instagram on desktop */
+@media (min-width: 900px) {
+  body:has(.navbar) {
+    padding-left: 244px;
+    padding-bottom: 0;
+  }
+
+  .appbar {
+    display: none;
+  }
+
+  .navbar {
+    top: 0;
+    right: auto;
+    width: 244px;
+    height: auto;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 4px;
+    padding: 24px 12px;
+    background: var(--ink);
+    border-top: none;
+  }
+
+  .navbar .nav-item {
+    flex: none;
+    height: auto;
+    min-height: 48px;
+    justify-content: flex-start;
+    padding: 0 14px;
+    border-radius: 12px;
+    color: #bdbbd9;
+  }
+
+  .navbar .nav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .navbar .nav-item.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+
+  .navbar .nav-item.active .avatar {
+    outline-color: #fff;
+  }
+
+  .navbar .nav-brand {
+    display: flex;
+    margin: 0 0 20px 14px;
+    color: #fff;
+    font-size: 20px;
+    text-decoration: none;
+  }
+
+  .navbar .nav-label {
+    display: inline;
+  }
+
+  .navbar .nav-spacer {
+    display: block;
+    flex: 1;
+  }
+
+  .navbar .desk-only {
+    display: flex;
+  }
+
+  .nav-badge {
+    top: 8px;
+    left: 34px;
+    margin-left: 0;
+  }
+
+  .reels-page .reels {
+    height: 100vh;
+    height: 100dvh;
+  }
+}

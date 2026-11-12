@@ -1,13 +1,40 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import api from '../api';
-import { BellIcon, MailIcon, SearchIcon, SettingsIcon } from './Icons';
+import Avatar from './Avatar';
+import {
+  HomeIcon,
+  SearchIcon,
+  ReelsIcon,
+  MailIcon,
+  BellIcon,
+  TrophyIcon,
+  SettingsIcon,
+  LogoutIcon,
+} from './Icons';
+
+const cls = ({ isActive }) => 'nav-item' + (isActive ? ' active' : '');
+const deskCls = ({ isActive }) => 'nav-item desk-only' + (isActive ? ' active' : '');
 
 export default function Topbar() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const stored = JSON.parse(localStorage.getItem('user') || 'null');
+  const [me, setMe] = useState(stored);
   const [unread, setUnread] = useState(0);
   const [unreadMsgs, setUnreadMsgs] = useState(0);
+
+  useEffect(() => {
+    let ignore = false;
+    api
+      .get('/users/me')
+      .then((res) => {
+        if (!ignore) setMe(res.data);
+      })
+      .catch(() => {});
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -42,30 +69,89 @@ export default function Topbar() {
     navigate('/login');
   };
 
+  const badge = (n) => n > 0 && <span className="nav-badge">{n > 9 ? '9+' : n}</span>;
+
   return (
-    <header className="topbar">
-      <Link to="/" className="brand">Creators Hub</Link>
-      <nav className="topnav">
-        <Link to="/">Feed</Link>
-        <Link to="/reels">Reels</Link>
-        <Link to="/challenge">Challenge</Link>
-        <Link to={'/u/' + user?.username}>My profile</Link>
-        <Link to="/search" className="bell" aria-label="Search people" title="Search people">
+    <>
+      <header className="appbar">
+        <Link to="/" className="brand">Creators Hub</Link>
+        <div className="appbar-actions">
+          <NavLink to="/challenge" className={cls} aria-label="Challenge" title="Challenge">
+            <TrophyIcon />
+          </NavLink>
+          <NavLink to="/notifications" className={cls} aria-label="Notifications" title="Notifications">
+            <BellIcon />
+            {badge(unread)}
+          </NavLink>
+          <NavLink to="/settings" className={cls} aria-label="Settings" title="Settings">
+            <SettingsIcon />
+          </NavLink>
+        </div>
+      </header>
+
+      <nav className="navbar" aria-label="Main">
+        <Link to="/" className="brand nav-brand">Creators Hub</Link>
+
+        <NavLink to="/" end className={cls} aria-label="Home" title="Home">
+          <HomeIcon />
+          <span className="nav-label">Home</span>
+        </NavLink>
+
+        <NavLink to="/search" className={cls} aria-label="Search" title="Search">
           <SearchIcon />
-        </Link>
-        <Link to="/messages" className="bell" aria-label="Messages" title="Messages">
+          <span className="nav-label">Search</span>
+        </NavLink>
+
+        <NavLink to="/reels" className={cls} aria-label="Reels" title="Reels">
+          <ReelsIcon />
+          <span className="nav-label">Reels</span>
+        </NavLink>
+
+        <NavLink to="/challenge" className={deskCls} aria-label="Challenge" title="Challenge">
+          <TrophyIcon />
+          <span className="nav-label">Challenge</span>
+        </NavLink>
+
+        <NavLink to="/messages" className={cls} aria-label="Messages" title="Messages">
           <MailIcon />
-          {unreadMsgs > 0 && <span className="badge">{unreadMsgs > 9 ? '9+' : unreadMsgs}</span>}
-        </Link>
-        <Link to="/notifications" className="bell" aria-label="Notifications" title="Notifications">
+          <span className="nav-label">Messages</span>
+          {badge(unreadMsgs)}
+        </NavLink>
+
+        <NavLink to="/notifications" className={deskCls} aria-label="Notifications" title="Notifications">
           <BellIcon />
-          {unread > 0 && <span className="badge">{unread > 9 ? '9+' : unread}</span>}
-        </Link>
-        <Link to="/settings" className="bell" aria-label="Settings" title="Settings">
+          <span className="nav-label">Notifications</span>
+          {badge(unread)}
+        </NavLink>
+
+        <NavLink
+          to={'/u/' + (me?.username || '')}
+          className={cls}
+          aria-label="My profile"
+          title="My profile"
+        >
+          <Avatar user={me} size="nav" />
+          <span className="nav-label">Profile</span>
+        </NavLink>
+
+        <div className="nav-spacer" />
+
+        <NavLink to="/settings" className={deskCls} aria-label="Settings" title="Settings">
           <SettingsIcon />
-        </Link>
-        <button className="btn-ghost" onClick={logout}>Log out</button>
+          <span className="nav-label">Settings</span>
+        </NavLink>
+
+        <button
+          type="button"
+          className="nav-item desk-only"
+          onClick={logout}
+          aria-label="Log out"
+          title="Log out"
+        >
+          <LogoutIcon />
+          <span className="nav-label">Log out</span>
+        </button>
       </nav>
-    </header>
+    </>
   );
 }

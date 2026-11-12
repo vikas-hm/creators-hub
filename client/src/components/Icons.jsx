@@ -161,3 +161,44 @@ export function DoubleCheckIcon() {
     </svg>
   );
 }
+export function HomeIcon() {
+  return (
+    <svg {...base}>
+      <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
+    </svg>
+  );
+}
+
+export function ReelsIcon() {
+  return (
+    <svg {...base}>
+      <rect x="3" y="3" width="18" height="18" rx="4" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <line x1="9" y1="3" x2="11" y2="9" />
+      <line x1="15" y1="3" x2="17" y2="9" />
+      <polygon points="10 13 10 18 15 15.5" />
+    </svg>
+  );
+}
+
+export function TrophyIcon() {
+  return (
+    <svg {...base}>
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <path d="M7 4h10v5a5 5 0 0 1-10 0z" />
+      <path d="M17 5h3v2a3 3 0 0 1-3 3" />
+      <path d="M7 5H4v2a3 3 0 0 0 3 3" />
+    </svg>
+  );
+}
+
+export function LogoutIcon() {
+  return (
+    <svg {...base}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
