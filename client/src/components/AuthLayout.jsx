@@ -1,3 +1,4 @@
+import Logo from './Logo';
 const tracks = [
   [
     { l: 2, w: 26, c: 'pink' },
@@ -20,7 +21,9 @@ export default function AuthLayout({ title, subtitle, children }) {
   return (
     <div className="auth">
       <aside className="stage">
-        <div className="brand">Creators Hub</div>
+        <div className="brand">
+          <Logo size={38} />
+        </div>
 
         <div className="stage-copy">
           <h1>Show your cut.</h1>

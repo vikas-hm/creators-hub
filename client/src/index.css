@@ -1827,3 +1827,283 @@ body:has(.reels-page) {
   background: rgba(255, 255, 255, 0.2);
   color: inherit;
 }
+
+/* =====================================================================
+   Brand theme: matches the Creators Hub logo
+   Variable names are kept from the old theme: --pink is now bright teal
+   (for dark backgrounds) and --pink-deep is deep teal (for light ones).
+   ===================================================================== */
+:root {
+  --ink: #0c1f25;
+  --ink-2: #16323b;
+  --paper: #f1faf9;
+  --text: #10242b;
+  --muted: #5a7078;
+  --line: #d7e9e6;
+  --pink: #2dd4c0;
+  --pink-deep: #0b7a73;
+  --yellow: #fbbf24;
+  --teal: #2dd4c0;
+  --coral: #ff708e;
+  --heart: #e11d48;
+}
+
+input:focus {
+  outline: 3px solid rgba(45, 212, 192, 0.35);
+  border-color: var(--pink-deep);
+}
+
+.btn:hover {
+  background: #086059;
+}
+
+.btn:focus-visible,
+.btn-ghost:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(11, 122, 115, 0.45);
+}
+
+.notif.unread {
+  background: #effaf8;
+}
+
+.sendbox-user:hover {
+  background: #e6f6f3;
+}
+
+.like.on,
+.reel-btn.on,
+.mini.on {
+  color: var(--heart);
+}
+
+.clip.pink {
+  background: var(--coral);
+}
+
+.stage-copy p {
+  color: #a9c4c9;
+}
+
+/* ---------- Logo ---------- */
+.brand::before {
+  content: none;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  display: block;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-family: 'Outfit', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: #fff;
+}
+
+.logo-text span {
+  color: var(--pink);
+}
+
+.logo-light .logo-text {
+  color: var(--ink);
+}
+
+.logo-light .logo-text span {
+  color: var(--pink-deep);
+}
+
+.stage .logo-text {
+  font-size: 24px;
+}
+
+.appbar .brand,
+.navbar .brand {
+  text-decoration: none;
+}
+
+/* ---------- Navigation style ---------- */
+.nav-item {
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-item.active svg :is(path, circle, rect, polygon) {
+  fill: currentColor;
+  fill-opacity: 0.2;
+}
+
+.nav-badge {
+  background: var(--heart);
+}
+
+/* Phone and tablet: floating bar with a pill for the active page */
+@media (max-width: 899px) {
+  body:has(.navbar) {
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+
+  body:has(.reels-page) {
+    padding-bottom: 0;
+  }
+
+  .navbar {
+    left: 50%;
+    right: auto;
+    width: min(520px, calc(100% - 24px));
+    transform: translateX(-50%);
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    height: 64px;
+    padding: 0 8px;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.94);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: 0 12px 32px rgba(12, 31, 37, 0.2);
+  }
+
+  .navbar .nav-item {
+    flex: 0 0 auto;
+    height: 46px;
+    min-width: 46px;
+    padding: 0 11px;
+    border-radius: 16px;
+  }
+
+  .navbar .nav-item.active {
+    gap: 8px;
+    padding: 0 16px 0 12px;
+    background: var(--ink);
+    color: var(--pink);
+  }
+
+  .navbar .nav-item.active .nav-label {
+    display: inline;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .navbar .nav-item.active .avatar {
+    outline: 2px solid var(--pink);
+  }
+
+  .navbar .nav-badge {
+    top: 3px;
+    right: 3px;
+    left: auto;
+    margin-left: 0;
+  }
+
+  .reels-page .reels {
+    height: calc(100vh - 140px);
+    height: calc(100dvh - 140px - env(safe-area-inset-bottom));
+  }
+}
+
+/* Laptop: sidebar with a teal marker on the active page */
+@media (min-width: 900px) {
+  .navbar .nav-item:hover {
+    transform: translateX(2px);
+  }
+
+  .navbar .nav-item.active {
+    background: rgba(45, 212, 192, 0.14);
+    color: var(--pink);
+  }
+
+  .navbar .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: var(--pink);
+  }
+
+  .navbar .nav-item.active .avatar {
+    outline-color: var(--pink);
+  }
+}
+
+/* ---------- Chat: message box stays at the bottom ---------- */
+.chat-back {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--text);
+}
+
+.chat-back:hover {
+  background: var(--line);
+  text-decoration: none;
+}
+
+.chat-back svg {
+  width: 22px;
+  height: 22px;
+}
+
+.home-main:has(> .chat) {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
+}
+
+.chat .chat-head {
+  flex: none;
+  padding: 10px 0;
+}
+
+.chat .chat-body {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  overflow-y: auto;
+}
+
+.chat > .comment-form {
+  flex: none;
+  margin-top: 0;
+  padding: 10px 0 12px;
+  background: var(--paper);
+}
+
+@media (max-width: 899px) {
+  .chat {
+    height: calc(100vh - 150px);
+    height: calc(100dvh - 56px - 94px - env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 900px) {
+  .home-main:has(> .chat) {
+    margin-top: 0;
+  }
+
+  .chat {
+    height: 100vh;
+    height: 100dvh;
+  }
+}

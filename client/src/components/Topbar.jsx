@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Avatar from './Avatar';
+import Logo from './Logo';
 import {
   HomeIcon,
   SearchIcon,
@@ -74,7 +75,9 @@ export default function Topbar() {
   return (
     <>
       <header className="appbar">
-        <Link to="/" className="brand">Creators Hub</Link>
+        <Link to="/" className="brand" aria-label="Creators Hub home">
+          <Logo size={30} />
+        </Link>
         <div className="appbar-actions">
           <NavLink to="/challenge" className={cls} aria-label="Challenge" title="Challenge">
             <TrophyIcon />
@@ -90,7 +93,9 @@ export default function Topbar() {
       </header>
 
       <nav className="navbar" aria-label="Main">
-        <Link to="/" className="brand nav-brand">Creators Hub</Link>
+        <Link to="/" className="brand nav-brand" aria-label="Creators Hub home">
+          <Logo size={34} />
+        </Link>
 
         <NavLink to="/" end className={cls} aria-label="Home" title="Home">
           <HomeIcon />

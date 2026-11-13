@@ -9,6 +9,7 @@ import {
   TrashIcon,
   MoreIcon,
   PencilIcon,
+  ArrowLeftIcon,
 } from '../components/Icons';
 
 const clock = (d) =>
@@ -182,7 +183,9 @@ function ChatView({ username }) {
         {status === 'ready' && (
           <section className="chat">
             <div className="chat-head">
-              <Link to="/messages" aria-label="Back to messages">Back</Link>
+              <Link to="/messages" className="chat-back" aria-label="Back to messages" title="Back">
+                <ArrowLeftIcon />
+              </Link>
               <Link to={'/u/' + other.username} className="chat-name">
                 <Avatar user={other} size="small" />
                 <strong>{other.name}</strong>
