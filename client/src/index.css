@@ -1689,3 +1689,141 @@ body:has(.reels-page) {
     height: 100dvh;
   }
 }
+/* ---------- Edit and unsend messages ---------- */
+.msg-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.msg-row.mine {
+  justify-content: flex-end;
+}
+
+.msg-row.theirs {
+  justify-content: flex-start;
+}
+
+.msg-wrap .msg-row .bubble.mine,
+.msg-wrap .msg-row .bubble.theirs {
+  align-self: center;
+}
+
+.msg-menu-wrap {
+  position: relative;
+}
+
+.msg-more {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.msg-more:hover {
+  background: var(--line);
+  color: var(--text);
+}
+
+.msg-more svg {
+  width: 18px;
+  height: 18px;
+}
+
+.msg-menu {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  z-index: 20;
+  min-width: 140px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+
+.msg-menu.down {
+  top: 100%;
+  bottom: auto;
+}
+
+.msg-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.msg-menu button:hover {
+  background: var(--paper);
+}
+
+.msg-menu button.danger {
+  color: #c0182f;
+}
+
+.msg-menu svg {
+  width: 18px;
+  height: 18px;
+}
+
+.bubble.unsent,
+.bubble.mine.unsent {
+  background: transparent;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.edit-row input {
+  padding: 8px 10px;
+  font-size: 15px;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.edit-actions button {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.edit-actions .save {
+  background: var(--pink-deep);
+  color: #fff;
+}
+
+.edit-actions .cancel {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+}

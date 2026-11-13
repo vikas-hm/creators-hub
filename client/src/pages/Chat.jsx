@@ -3,7 +3,13 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import Avatar from '../components/Avatar';
-import { CheckIcon, DoubleCheckIcon, TrashIcon } from '../components/Icons';
+import {
+  CheckIcon,
+  DoubleCheckIcon,
+  TrashIcon,
+  MoreIcon,
+  PencilIcon,
+} from '../components/Icons';
 
 const clock = (d) =>
   new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -36,6 +42,9 @@ function ChatView({ username }) {
   const [status, setStatus] = useState('loading');
   const [text, setText] = useState('');
   const [error, setError] = useState('');
+  const [menuId, setMenuId] = useState(null);
+  const [editId, setEditId] = useState(null);
+  const [editText, setEditText] = useState('');
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -68,7 +77,20 @@ function ChatView({ username }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
+  // Close the message menu when you click anywhere else
+  useEffect(() => {
+    if (!menuId) return;
+    const close = () => setMenuId(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [menuId]);
+
   if (!token) return <Navigate to="/login" />;
+
+  const reload = async () => {
+    const res = await api.get('/messages/with/' + username);
+    setMessages(res.data.messages);
+  };
 
   const send = async (e) => {
     e.preventDefault();
@@ -77,10 +99,50 @@ function ChatView({ username }) {
     try {
       await api.post('/messages/to/' + username, { text });
       setText('');
-      const res = await api.get('/messages/with/' + username);
-      setMessages(res.data.messages);
+      await reload();
     } catch (err) {
       setError(err.response?.data?.message || 'Could not send your message');
+    }
+  };
+
+  const startEdit = (m) => {
+    setEditId(m._id);
+    setEditText(m.text);
+    setMenuId(null);
+    setError('');
+  };
+
+  const cancelEdit = () => {
+    setEditId(null);
+    setEditText('');
+  };
+
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    if (!editText.trim()) return;
+    setError('');
+    try {
+      await api.patch('/messages/' + editId, { text: editText });
+      setEditId(null);
+      setEditText('');
+      await reload();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not edit the message');
+    }
+  };
+
+  const unsend = async (m) => {
+    setMenuId(null);
+    const ok = window.confirm(
+      'Unsend this message? ' + other.name + ' will no longer see it.'
+    );
+    if (!ok) return;
+    setError('');
+    try {
+      await api.delete('/messages/' + m._id);
+      await reload();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not unsend the message');
     }
   };
 
@@ -99,8 +161,11 @@ function ChatView({ username }) {
     }
   };
 
-  // The last message I sent. "Seen" is shown under it, like Instagram.
-  const lastMineIndex = messages.reduce((acc, m, i) => (m.sender === myId ? i : acc), -1);
+  // The last message I sent that was not unsent. "Seen" is shown under it.
+  const lastMineIndex = messages.reduce(
+    (acc, m, i) => (m.sender === myId && !m.unsent ? i : acc),
+    -1
+  );
 
   return (
     <div>
@@ -141,24 +206,98 @@ function ChatView({ username }) {
 
               {messages.map((m, i) => {
                 const mine = m.sender === myId;
+                const editing = editId === m._id;
+
                 return (
                   <div key={m._id} className="msg-wrap">
-                    <div className={'bubble ' + (mine ? 'mine' : 'theirs')}>
-                      {m.post !== null && <SharedPost post={m.post} />}
-                      {m.text && <p>{m.text}</p>}
-                      <small>
-                        {clock(m.createdAt)}
-                        {mine && (
-                          <span
-                            className={'ticks' + (m.read ? ' seen' : '')}
-                            aria-label={m.read ? 'Seen' : 'Sent'}
-                            title={m.read ? 'Seen' : 'Sent'}
+                    <div className={'msg-row ' + (mine ? 'mine' : 'theirs')}>
+                      {mine && !m.unsent && !editing && (
+                        <div className="msg-menu-wrap">
+                          <button
+                            type="button"
+                            className="msg-more"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuId((id) => (id === m._id ? null : m._id));
+                            }}
+                            aria-label="Message options"
+                            aria-expanded={menuId === m._id}
+                            title="Message options"
                           >
-                            {m.read ? <DoubleCheckIcon /> : <CheckIcon />}
-                          </span>
+                            <MoreIcon />
+                          </button>
+
+                          {menuId === m._id && (
+                            <div className={'msg-menu' + (i < 2 ? ' down' : '')} role="menu">
+                              {m.canEdit && (
+                                <button type="button" role="menuitem" onClick={() => startEdit(m)}>
+                                  <PencilIcon />
+                                  Edit
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                role="menuitem"
+                                className="danger"
+                                onClick={() => unsend(m)}
+                              >
+                                <TrashIcon />
+                                Unsend
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div
+                        className={
+                          'bubble ' + (mine ? 'mine' : 'theirs') + (m.unsent ? ' unsent' : '')
+                        }
+                      >
+                        {m.unsent ? (
+                          <p>{mine ? 'You unsent a message' : other.name + ' unsent a message'}</p>
+                        ) : (
+                          <>
+                            {m.post !== null && <SharedPost post={m.post} />}
+
+                            {editing ? (
+                              <form className="edit-row" onSubmit={saveEdit}>
+                                <input
+                                  value={editText}
+                                  maxLength={1000}
+                                  onChange={(e) => setEditText(e.target.value)}
+                                  aria-label="Edit your message"
+                                  autoFocus
+                                />
+                                <div className="edit-actions">
+                                  <button type="button" className="cancel" onClick={cancelEdit}>
+                                    Cancel
+                                  </button>
+                                  <button type="submit" className="save">Save</button>
+                                </div>
+                              </form>
+                            ) : (
+                              m.text && <p>{m.text}</p>
+                            )}
+
+                            <small>
+                              {clock(m.createdAt)}
+                              {m.edited ? ' · edited' : ''}
+                              {mine && (
+                                <span
+                                  className={'ticks' + (m.read ? ' seen' : '')}
+                                  aria-label={m.read ? 'Seen' : 'Sent'}
+                                  title={m.read ? 'Seen' : 'Sent'}
+                                >
+                                  {m.read ? <DoubleCheckIcon /> : <CheckIcon />}
+                                </span>
+                              )}
+                            </small>
+                          </>
                         )}
-                      </small>
+                      </div>
                     </div>
+
                     {i === lastMineIndex && m.read && (
                       <p className="seen-label">
                         Seen{m.readAt ? ' ' + clock(m.readAt) : ''}

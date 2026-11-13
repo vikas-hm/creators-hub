@@ -7,6 +7,9 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// A message can be edited for 15 minutes after it was sent. Unsend works any time.
+const EDIT_WINDOW = 15 * 60 * 1000;
+
 // Messages in both directions between two users
 const between = (a, b) => ({
   $or: [
@@ -35,12 +38,13 @@ router.get('/search', auth, async (req, res) => {
   }
 });
 
-// Number of unread messages (for the top bar)
+// Number of unread messages (for the navigation bar)
 router.get('/unread-count', auth, async (req, res) => {
   try {
     const count = await Message.countDocuments({
       recipient: req.userId,
       read: false,
+      unsent: { $ne: true },
       deletedFor: { $ne: req.userId },
     });
     res.json({ count });
@@ -74,8 +78,9 @@ router.get('/conversations', auth, async (req, res) => {
         map.set(key, {
           user: other,
           last: {
-            text: m.text,
+            text: m.unsent ? '' : m.text,
             hasPost: !!m.post,
+            unsent: !!m.unsent,
             mine,
             read: m.read,
             createdAt: m.createdAt,
@@ -83,7 +88,7 @@ router.get('/conversations', auth, async (req, res) => {
           unread: 0,
         });
       }
-      if (!mine && !m.read) map.get(key).unread += 1;
+      if (!mine && !m.read && !m.unsent) map.get(key).unread += 1;
     }
 
     res.json([...map.values()]);
@@ -101,7 +106,7 @@ router.get('/with/:username', auth, async (req, res) => {
     );
     if (!other) return res.status(404).json({ message: 'User not found' });
 
-    const messages = await Message.find({
+    const found = await Message.find({
       $and: [between(me, other._id), { deletedFor: { $ne: me } }],
     })
       .sort({ createdAt: 1 })
@@ -116,6 +121,17 @@ router.get('/with/:username', auth, async (req, res) => {
       { sender: other._id, recipient: me, read: false },
       { read: true, readAt: new Date() }
     );
+
+    // canEdit tells the app whether to show the Edit option for each message
+    const messages = found.map((m) => {
+      const o = m.toObject();
+      o.canEdit =
+        m.sender.toString() === me &&
+        !m.unsent &&
+        !!m.text &&
+        Date.now() - m.createdAt.getTime() < EDIT_WINDOW;
+      return o;
+    });
 
     res.json({ user: other, messages });
   } catch (err) {
@@ -176,6 +192,68 @@ router.post('/to/:username', auth, async (req, res) => {
     });
 
     res.status(201).json(message);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Edit one of my messages (within 15 minutes)
+router.patch('/:id', auth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    const message = await Message.findById(req.params.id);
+    if (!message) return res.status(404).json({ message: 'Message not found' });
+
+    if (message.sender.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You can edit only your own messages' });
+    }
+    if (message.unsent) {
+      return res.status(400).json({ message: 'This message was unsent' });
+    }
+    if (!message.text) {
+      return res.status(400).json({ message: 'Only text messages can be edited' });
+    }
+    if (Date.now() - message.createdAt.getTime() > EDIT_WINDOW) {
+      return res.status(400).json({ message: 'You can edit a message only within 15 minutes' });
+    }
+
+    const text = (req.body.text || '').trim().slice(0, 1000);
+    if (!text) return res.status(400).json({ message: 'The message cannot be empty' });
+
+    message.text = text;
+    message.edited = true;
+    message.editedAt = new Date();
+    await message.save();
+
+    res.json(message);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Unsend one of my messages (works any time)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    const message = await Message.findById(req.params.id);
+    if (!message) return res.status(404).json({ message: 'Message not found' });
+
+    if (message.sender.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You can unsend only your own messages' });
+    }
+
+    message.unsent = true;
+    message.text = '';
+    message.post = null;
+    await message.save();
+
+    res.json({ message: 'Message unsent' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

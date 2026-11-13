@@ -95,9 +95,12 @@ export default function Messages() {
               <div className="notif-text">
                 <strong>{c.user.name}</strong>
                 <small>
-                  {c.last.mine ? 'You: ' : ''}
-                  {c.last.text || 'Shared a post'}
-                  {c.last.mine && c.last.read ? ' · Seen' : ''}
+                  {c.last.unsent
+                    ? c.last.mine
+                      ? 'You unsent a message'
+                      : 'Message unsent'
+                    : (c.last.mine ? 'You: ' : '') + (c.last.text || 'Shared a post')}
+                  {!c.last.unsent && c.last.mine && c.last.read ? ' · Seen' : ''}
                 </small>
               </div>
               {c.unread > 0 && <span className="badge inline">{c.unread}</span>}

@@ -8,6 +8,9 @@ const messageSchema = new mongoose.Schema(
     post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', default: null },
     read: { type: Boolean, default: false },
     readAt: { type: Date },
+    edited: { type: Boolean, default: false },
+    editedAt: { type: Date },
+    unsent: { type: Boolean, default: false },
     // Users who deleted this message from their own chat view
     deletedFor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
