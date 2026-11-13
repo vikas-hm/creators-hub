@@ -91,7 +91,14 @@ router.post('/', auth, handleUpload, async (req, res) => {
     res.status(201).json(post);
   } catch (err) {
     console.log('Upload error:', err.message);
-    res.status(500).json({ message: 'Upload failed. Check your Cloudinary keys.' });
+        const text = String(err.message || '');
+    let message = 'Upload failed. Try again.';
+    if (/timeout/i.test(text)) {
+      message = 'The upload took too long. Try a shorter video, or export it at 720p.';
+    } else if (/invalid|format|unsupported/i.test(text)) {
+      message = 'This video format is not supported. Export it as an MP4.';
+    }
+    res.status(500).json({ message });
   }
 });
 

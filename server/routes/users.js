@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const Notification = require('../models/Notification');
-const Message = require('../models/Message');
+const Challenge = require('../models/Challenge');
 const auth = require('../middleware/auth');
 const notify = require('../utils/notify');
 const cloudinary = require('../config/cloudinary');
@@ -257,6 +257,19 @@ router.delete('/me', auth, async (req, res) => {
       ],
     });
     await Message.deleteMany({ $or: [{ sender: me }, { recipient: me }] });
+
+        // 5b. Challenges I started: remove their files, keep other people's entries as normal posts
+    const myChallenges = await Challenge.find({ createdBy: me }).select('publicId mediaType');
+    await Promise.allSettled(
+      myChallenges
+        .filter((c) => c.publicId)
+        .map((c) => cloudinary.uploader.destroy(c.publicId, { resource_type: c.mediaType }))
+    );
+    await Post.updateMany(
+      { challenge: { $in: myChallenges.map((c) => c._id) } },
+      { challenge: null }
+    );
+    await Challenge.deleteMany({ createdBy: me });
 
     // 6. My profile photo, then the account itself
     if (user.avatarId) {

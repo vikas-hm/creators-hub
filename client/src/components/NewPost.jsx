@@ -4,30 +4,13 @@ import api from '../api';
 const MAX_IMAGE = 10 * 1024 * 1024;
 const MAX_VIDEO = 50 * 1024 * 1024;
 
-export default function NewPost({ onCreated }) {
+export default function NewPost({ onCreated, challengeId }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [caption, setCaption] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [inputKey, setInputKey] = useState(0);
-  const [challenge, setChallenge] = useState(null);
-  const [enter, setEnter] = useState(false);
-
-  useEffect(() => {
-    let ignore = false;
-    api
-      .get('/challenges/current')
-      .then((res) => {
-        if (!ignore && res.data.challenge && res.data.active) {
-          setChallenge(res.data.challenge);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -81,13 +64,12 @@ export default function NewPost({ onCreated }) {
       const data = new FormData();
       data.append('media', file);
       data.append('caption', caption);
-      if (enter && challenge) data.append('challengeId', challenge._id);
+      if (challengeId) data.append('challengeId', challengeId);
       await api.post('/posts', data);
 
       setFile(null);
       setPreview('');
       setCaption('');
-      setEnter(false);
       setInputKey((k) => k + 1);
       onCreated();
     } catch (err) {
@@ -101,7 +83,7 @@ export default function NewPost({ onCreated }) {
     <section className="composer">
       <form className="form" onSubmit={submit}>
         <label className="field">
-          <span>Photo or video</span>
+          <span>{challengeId ? 'Your edited photo or video' : 'Photo or video'}</span>
           <input
             key={inputKey}
             type="file"
@@ -126,30 +108,23 @@ export default function NewPost({ onCreated }) {
         <label className="field">
           <span>Caption</span>
           <input
-            placeholder="Say something about your work"
+            placeholder={
+              challengeId ? 'Tell people what you changed' : 'Say something about your work'
+            }
             value={caption}
             maxLength={500}
             onChange={(e) => setCaption(e.target.value)}
           />
         </label>
 
-        {challenge && (
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={enter}
-              onChange={(e) => setEnter(e.target.checked)}
-            />
-            <span>
-              Enter this week's challenge: <strong>{challenge.title}</strong>
-            </span>
-          </label>
-        )}
-
         {error && <p className="error" role="alert">{error}</p>}
 
         <button className="btn" type="submit" disabled={busy}>
-          {busy ? 'Uploading, please wait...' : 'Publish post'}
+          {busy
+            ? 'Uploading, please wait...'
+            : challengeId
+              ? 'Submit my entry'
+              : 'Publish post'}
         </button>
       </form>
     </section>

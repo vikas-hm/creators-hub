@@ -30,3 +30,18 @@ export async function sharePost(postId, caption) {
     return 'failed';
   }
 }
+
+// "3 days left", "5 hours left", "Ended"
+export function timeLeft(endsAt) {
+  const ms = new Date(endsAt).getTime() - Date.now();
+  if (ms <= 0) return 'Ended';
+
+  const mins = Math.floor(ms / 60000);
+  const days = Math.floor(mins / 1440);
+  if (days >= 1) return days + (days === 1 ? ' day left' : ' days left');
+
+  const hours = Math.floor(mins / 60);
+  if (hours >= 1) return hours + (hours === 1 ? ' hour left' : ' hours left');
+
+  return Math.max(mins, 1) + ' min left';
+}
