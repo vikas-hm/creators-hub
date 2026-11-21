@@ -3,16 +3,16 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import api from '../api';
 import Avatar from './Avatar';
 import Logo from './Logo';
+import { LogoutIcon } from './Icons';
 import {
-  HomeIcon,
-  SearchIcon,
-  ReelsIcon,
-  MailIcon,
-  BellIcon,
-  TrophyIcon,
-  SettingsIcon,
-  LogoutIcon,
-} from './Icons';
+  NavHome,
+  NavSearch,
+  NavReels,
+  NavChat,
+  NavTrophy,
+  NavBell,
+  NavSliders,
+} from './NavIcons';
 
 const cls = ({ isActive }) => 'nav-item' + (isActive ? ' active' : '');
 const deskCls = ({ isActive }) => 'nav-item desk-only' + (isActive ? ' active' : '');
@@ -79,53 +79,47 @@ export default function Topbar() {
           <Logo size={30} />
         </Link>
         <div className="appbar-actions">
-          <NavLink to="/challenge" className={cls} aria-label="Challenge" title="Challenge">
-            <TrophyIcon />
+          <NavLink to="/challenge" className={cls} aria-label="Challenges" title="Challenges">
+            <NavTrophy />
           </NavLink>
           <NavLink to="/notifications" className={cls} aria-label="Notifications" title="Notifications">
-            <BellIcon />
+            <NavBell />
             {badge(unread)}
           </NavLink>
           <NavLink to="/settings" className={cls} aria-label="Settings" title="Settings">
-            <SettingsIcon />
+            <NavSliders />
           </NavLink>
         </div>
       </header>
 
       <nav className="navbar" aria-label="Main">
         <Link to="/" className="brand nav-brand" aria-label="Creators Hub home">
-          <Logo size={34} />
+          <Logo size={36} text={false} />
         </Link>
 
         <NavLink to="/" end className={cls} aria-label="Home" title="Home">
-          <HomeIcon />
-          <span className="nav-label">Home</span>
+          <NavHome />
         </NavLink>
 
         <NavLink to="/search" className={cls} aria-label="Search" title="Search">
-          <SearchIcon />
-          <span className="nav-label">Search</span>
+          <NavSearch />
         </NavLink>
 
         <NavLink to="/reels" className={cls} aria-label="Reels" title="Reels">
-          <ReelsIcon />
-          <span className="nav-label">Reels</span>
+          <NavReels />
         </NavLink>
 
-        <NavLink to="/challenge" className={deskCls} aria-label="Challenge" title="Challenge">
-          <TrophyIcon />
-          <span className="nav-label">Challenge</span>
+        <NavLink to="/challenge" className={deskCls} aria-label="Challenges" title="Challenges">
+          <NavTrophy />
         </NavLink>
 
         <NavLink to="/messages" className={cls} aria-label="Messages" title="Messages">
-          <MailIcon />
-          <span className="nav-label">Messages</span>
+          <NavChat />
           {badge(unreadMsgs)}
         </NavLink>
 
         <NavLink to="/notifications" className={deskCls} aria-label="Notifications" title="Notifications">
-          <BellIcon />
-          <span className="nav-label">Notifications</span>
+          <NavBell />
           {badge(unread)}
         </NavLink>
 
@@ -136,14 +130,12 @@ export default function Topbar() {
           title="My profile"
         >
           <Avatar user={me} size="nav" />
-          <span className="nav-label">Profile</span>
         </NavLink>
 
         <div className="nav-spacer" />
 
         <NavLink to="/settings" className={deskCls} aria-label="Settings" title="Settings">
-          <SettingsIcon />
-          <span className="nav-label">Settings</span>
+          <NavSliders />
         </NavLink>
 
         <button
@@ -154,7 +146,6 @@ export default function Topbar() {
           title="Log out"
         >
           <LogoutIcon />
-          <span className="nav-label">Log out</span>
         </button>
       </nav>
     </>

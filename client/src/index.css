@@ -2278,3 +2278,115 @@ textarea:focus {
   background: var(--yellow);
   color: var(--ink);
 }
+
+/* ---------- Icon-only navigation with logo-colored dots ---------- */
+.appbar,
+.navbar {
+  --dot-pink: #ef456a;
+  --dot-yellow: #f5a301;
+  --dot-blue: #3563ff;
+}
+
+/* On dark backgrounds the dots use the brighter logo colors */
+.appbar,
+.navbar .nav-item.active {
+  --dot-pink: #ff708e;
+  --dot-yellow: #ffc146;
+  --dot-blue: #6e8cfe;
+}
+
+.nav-item svg .dot.dot-pink {
+  fill: var(--dot-pink);
+  fill-opacity: 1;
+}
+
+.nav-item svg .dot.dot-yellow {
+  fill: var(--dot-yellow);
+  fill-opacity: 1;
+}
+
+.nav-item svg .dot.dot-blue {
+  fill: var(--dot-blue);
+  fill-opacity: 1;
+}
+
+.nav-item svg .dot {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.nav-item.active svg {
+  animation: nav-pop 0.32s ease;
+}
+
+.nav-item.active svg .dot {
+  transform: scale(1.18);
+}
+
+@keyframes nav-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item.active svg {
+    animation: none;
+  }
+}
+
+/* Phone and tablet: the active icon sits in a dark bubble, no text */
+@media (max-width: 899px) {
+  .navbar .nav-item.active {
+    gap: 0;
+    padding: 0 11px;
+  }
+}
+
+/* Laptop: slim icon rail */
+@media (min-width: 900px) {
+  body:has(.navbar) {
+    padding-left: 88px;
+  }
+
+  .navbar {
+    width: 88px;
+    align-items: center;
+    padding: 20px 0;
+    --dot-pink: #ff708e;
+    --dot-yellow: #ffc146;
+    --dot-blue: #6e8cfe;
+  }
+
+  .navbar .nav-brand {
+    width: 100%;
+    margin: 0 0 18px;
+    justify-content: center;
+  }
+
+  .navbar .nav-item {
+    width: 52px;
+    height: 52px;
+    min-height: 52px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 16px;
+  }
+
+  .navbar .nav-item.active::before {
+    left: -18px;
+  }
+
+  .navbar .nav-badge {
+    top: 6px;
+    left: auto;
+    right: 4px;
+  }
+}
+
