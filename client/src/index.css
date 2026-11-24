@@ -2390,3 +2390,10 @@ textarea:focus {
   }
 }
 
+.hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}

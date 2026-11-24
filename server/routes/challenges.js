@@ -1,58 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const Challenge = require('../models/Challenge');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const cloudinary = require('../config/cloudinary');
+const { handleUpload, saveMedia, uploadErrorMessage } = require('../utils/media');
 
 const router = express.Router();
 
-const MAX_IMAGE = 10 * 1024 * 1024;
-const MAX_VIDEO = 50 * 1024 * 1024;
 const MAX_ACTIVE_PER_USER = 3;
 const MAX_DAYS = 90;
 const DAY = 24 * 60 * 60 * 1000;
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_VIDEO },
-});
-
-const handleUpload = (req, res, next) => {
-  upload.single('media')(req, res, (err) => {
-    if (err) {
-      const message =
-        err.code === 'LIMIT_FILE_SIZE'
-          ? 'File is too big. Photos can be up to 10 MB and videos up to 50 MB.'
-          : 'Upload error';
-      return res.status(400).json({ message });
-    }
-    next();
-  });
-};
-
-const uploadToCloudinary = (buffer, resourceType) =>
-  new Promise((resolve, reject) => {
-    const options = {
-      folder: 'creators-hub/challenges',
-      resource_type: resourceType,
-      timeout: 300000,
-    };
-    const done = (err, result) => (err ? reject(err) : resolve(result));
-
-    const stream =
-      resourceType === 'video'
-        ? cloudinary.uploader.upload_large_stream(null, done, {
-            ...options,
-            chunk_size: 6000000,
-          })
-        : cloudinary.uploader.upload_stream(options, done);
-
-    stream.end(buffer);
-  });
 
 // Reads the login token if there is one, but does not require it
 const optionalUserId = (req) => {
@@ -172,19 +132,10 @@ router.post('/', auth, handleUpload, async (req, res) => {
     let publicId = '';
 
     if (req.file) {
-      const isVideo = req.file.mimetype.startsWith('video/');
-      const isImage = req.file.mimetype.startsWith('image/');
-      if (!isVideo && !isImage) {
-        return res.status(400).json({ message: 'Only photos and videos are allowed' });
-      }
-      if (isImage && req.file.size > MAX_IMAGE) {
-        return res.status(400).json({ message: 'Photos can be up to 10 MB' });
-      }
-
-      const result = await uploadToCloudinary(req.file.buffer, isVideo ? 'video' : 'image');
-      mediaUrl = result.secure_url;
-      mediaType = isVideo ? 'video' : 'image';
-      publicId = result.public_id;
+      const media = await saveMedia(req.file, 'creators-hub/challenges');
+      mediaUrl = media.url;
+      mediaType = media.type;
+      publicId = media.publicId;
     }
 
     const challenge = await Challenge.create({
@@ -200,18 +151,8 @@ router.post('/', auth, handleUpload, async (req, res) => {
     res.status(201).json(challenge);
   } catch (err) {
     console.log('Challenge error:', err.message || err);
-    const text = String(err.message || '');
-
-    let message = 'Could not create the challenge. Try again.';
-    if (/timeout/i.test(text)) {
-      message = 'The upload took too long. Try a shorter video, or export it at 720p.';
-    } else if (/size|large/i.test(text)) {
-      message = 'The file is too large. Use a shorter video.';
-    } else if (/invalid|format|unsupported/i.test(text)) {
-      message = 'This video format is not supported. Export it as an MP4.';
-    }
-
-    res.status(500).json({ message });
+    const { status, message } = uploadErrorMessage(err);
+    res.status(status).json({ message });
   }
 });
 

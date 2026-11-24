@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
-
-const MAX_IMAGE = 10 * 1024 * 1024;
-const MAX_VIDEO = 50 * 1024 * 1024;
+import { checkFile, MEDIA_HINT } from '../mediacheck';
 
 export default function NewPost({ onCreated, challengeId }) {
   const [file, setFile] = useState(null);
@@ -20,24 +18,17 @@ export default function NewPost({ onCreated, challengeId }) {
 
   const isVideo = file?.type.startsWith('video/');
 
-  const pickFile = (e) => {
+  const pickFile = async (e) => {
     const f = e.target.files[0];
     setError('');
     if (!f) return;
 
-    const video = f.type.startsWith('video/');
-    const image = f.type.startsWith('image/');
-
-    if (!video && !image) {
-      setError('Choose a photo or a video');
-      return;
-    }
-    if (image && f.size > MAX_IMAGE) {
-      setError('Photos can be up to 10 MB');
-      return;
-    }
-    if (video && f.size > MAX_VIDEO) {
-      setError('Videos can be up to 50 MB. Try a shorter clip.');
+    const problem = await checkFile(f);
+    if (problem) {
+      setFile(null);
+      setPreview('');
+      setInputKey((k) => k + 1);
+      setError(problem);
       return;
     }
 
@@ -90,6 +81,7 @@ export default function NewPost({ onCreated, challengeId }) {
             accept="image/*,video/*"
             onChange={pickFile}
           />
+          <small className="hint">{MEDIA_HINT}</small>
         </label>
 
         {preview && (
