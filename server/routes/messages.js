@@ -10,6 +10,11 @@ const router = express.Router();
 // A message can be edited for 15 minutes after it was sent. Unsend works any time.
 const EDIT_WINDOW = 15 * 60 * 1000;
 
+// The reactions people can use
+const REACTIONS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
+const plain = (s) => String(s || '').replace(/\uFE0F/g, '');
+const canonicalReaction = (value) => REACTIONS.find((e) => plain(e) === plain(value)) || null;
+
 // Messages in both directions between two users
 const between = (a, b) => ({
   $or: [
@@ -115,7 +120,8 @@ router.get('/with/:username', auth, async (req, res) => {
         path: 'post',
         select: 'imageUrl mediaType caption user',
         populate: { path: 'user', select: 'username' },
-      });
+      })
+      .populate({ path: 'replyTo', select: 'text sender post unsent' });
 
     await Message.updateMany(
       { sender: other._id, recipient: me, read: false },
@@ -159,7 +165,7 @@ router.delete('/with/:username', auth, async (req, res) => {
   }
 });
 
-// Send a message, a shared post, or both
+// Send a message, a shared post, or both. Can also be a reply to an earlier message.
 router.post('/to/:username', auth, async (req, res) => {
   try {
     const text = (req.body.text || '').trim().slice(0, 1000);
@@ -184,14 +190,67 @@ router.post('/to/:username', auth, async (req, res) => {
       if (!post) return res.status(404).json({ message: 'Post not found' });
     }
 
+    let original = null;
+    if (req.body.replyTo) {
+      if (!mongoose.isValidObjectId(req.body.replyTo)) {
+        return res.status(400).json({ message: 'The message you are replying to was not found' });
+      }
+      original = await Message.findOne({
+        _id: req.body.replyTo,
+        ...between(req.userId, other._id),
+      });
+      if (!original) {
+        return res.status(400).json({ message: 'The message you are replying to was not found' });
+      }
+    }
+
     const message = await Message.create({
       sender: req.userId,
       recipient: other._id,
       text,
       post: post ? post._id : null,
+      replyTo: original ? original._id : null,
     });
 
     res.status(201).json(message);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// React to a message. The same reaction again removes it. Keep this after /to/:username.
+router.post('/:id/react', auth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    const emoji = canonicalReaction(req.body.emoji);
+    if (!emoji) return res.status(400).json({ message: 'That reaction is not available' });
+
+    const message = await Message.findById(req.params.id);
+    const me = req.userId;
+
+    const involved =
+      !!message &&
+      (message.sender.toString() === me || message.recipient.toString() === me) &&
+      !message.deletedFor.some((id) => id.toString() === me);
+
+    if (!involved) return res.status(404).json({ message: 'Message not found' });
+    if (message.unsent) return res.status(400).json({ message: 'This message was unsent' });
+
+    const mine = message.reactions.find((r) => r.user.toString() === me);
+
+    if (mine && mine.emoji === emoji) {
+      message.reactions = message.reactions.filter((r) => r.user.toString() !== me);
+    } else if (mine) {
+      mine.emoji = emoji;
+    } else {
+      message.reactions.push({ user: me, emoji });
+    }
+
+    await message.save();
+    res.json({ reactions: message.reactions });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -251,6 +310,8 @@ router.delete('/:id', auth, async (req, res) => {
     message.unsent = true;
     message.text = '';
     message.post = null;
+    message.replyTo = null;
+    message.reactions = [];
     await message.save();
 
     res.json({ message: 'Message unsent' });
