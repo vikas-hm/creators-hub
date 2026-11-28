@@ -25,6 +25,12 @@ app.get('/', (req, res) => {
   res.send('Creators Hub API is running');
 });
 
+// Any error that nothing else caught
+app.use((err, req, res, next) => {
+  console.log('Unhandled error:', err);
+  res.status(500).json({ message: 'Server error' });
+});
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {

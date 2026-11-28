@@ -11,7 +11,8 @@ export default function Home() {
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-    const removePost = (id) => setPosts((list) => list.filter((p) => p._id !== id));
+
+  const removePost = (id) => setPosts((list) => list.filter((p) => p._id !== id));
 
   const refreshPosts = async () => {
     try {
@@ -62,7 +63,14 @@ export default function Home() {
         )}
 
         {posts.map((post) => (
-          <PostCard key={post._id} post={post} currentUserId={user?.id} onDeleted={removePost} />        ))}
+          <PostCard
+            key={post._id}
+            post={post}
+            currentUserId={user?.id}
+            onDeleted={removePost}
+            openReel
+          />
+        ))}
       </main>
     </div>
   );

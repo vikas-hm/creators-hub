@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import SwipeNav from './components/SwipeNav';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -16,21 +17,24 @@ import Settings from './pages/Settings';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/u/:username" element={<Profile />} />
-      <Route path="/reels" element={<Reels />} />
-      <Route path="/p/:id" element={<PostPage />} />
-      <Route path="/challenge" element={<Challenge />} />
-      <Route path="/challenge/:id" element={<ChallengeDetail />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/messages" element={<Messages />} />
-      <Route path="/messages/:username" element={<Chat />} />
-      <Route path="/search" element={<Search />} />
-      <Route path="/settings" element={<Settings />} />
-    </Routes>
+    <>
+      <SwipeNav />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/u/:username" element={<Profile />} />
+        <Route path="/reels" element={<Reels />} />
+        <Route path="/p/:id" element={<PostPage />} />
+        <Route path="/challenge" element={<Challenge />} />
+        <Route path="/challenge/:id" element={<ChallengeDetail />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/messages/:username" element={<Chat />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </>
   );
 }

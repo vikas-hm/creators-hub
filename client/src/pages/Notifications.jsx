@@ -4,12 +4,23 @@ import api from '../api';
 import Topbar from '../components/Topbar';
 import Avatar from '../components/Avatar';
 
-const texts = {
+const WORDS = {
   like: 'liked your post',
   comment: 'commented on your post',
   follow: 'started following you',
   reply: 'replied to your comment',
   comment_like: 'liked your comment',
+};
+
+const describe = (n) =>
+  n.type === 'message_reaction'
+    ? 'reacted ' + n.text + ' to your message'
+    : WORDS[n.type] || 'did something';
+
+const target = (n) => {
+  if (n.type === 'message_reaction') return '/messages/' + n.sender.username;
+  if (n.post) return '/p/' + n.post._id;
+  return '/u/' + n.sender.username;
 };
 
 export default function Notifications() {
@@ -50,7 +61,7 @@ export default function Notifications() {
 
         {!loading && items.length === 0 && (
           <div className="empty">
-            <p>Nothing here yet. When someone likes, comments, or follows you, it shows up here.</p>
+            <p>Nothing here yet. When someone likes, comments, reacts or follows you, it shows up here.</p>
           </div>
         )}
 
@@ -58,15 +69,16 @@ export default function Notifications() {
           <Link
             key={n._id}
             className={'notif' + (n.read ? '' : ' unread')}
-            to={n.post ? '/p/' + n.post._id : '/u/' + n.sender.username}
+            to={target(n)}
           >
             <Avatar user={n.sender} />
             <div className="notif-text">
               <span>
-                <strong>{n.sender.username}</strong> {texts[n.type] || 'did something'}
+                <strong>{n.sender.username}</strong> {describe(n)}
               </span>
               <small>{new Date(n.createdAt).toLocaleString()}</small>
             </div>
+            {n.type === 'message_reaction' && <span className="notif-emoji">{n.text}</span>}
             {n.post?.mediaType === 'image' && (
               <img className="notif-thumb" src={n.post.imageUrl} alt="" />
             )}

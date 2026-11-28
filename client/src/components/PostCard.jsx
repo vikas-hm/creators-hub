@@ -13,7 +13,8 @@ import {
   TrashIcon,
 } from './Icons';
 
-export default function PostCard({ post, currentUserId, onDeleted }) {
+// openReel: in the feed, a video opens in the Reels page when you tap it
+export default function PostCard({ post, currentUserId, onDeleted, openReel = false }) {
   const [liked, setLiked] = useState(post.likes.includes(currentUserId));
   const [count, setCount] = useState(post.likes.length);
   const [open, setOpen] = useState(false);
@@ -66,14 +67,37 @@ export default function PostCard({ post, currentUserId, onDeleted }) {
       </div>
 
       {post.mediaType === 'video' ? (
-        <video
-          className="post-video"
-          src={post.imageUrl}
-          controls
-          playsInline
-          loop
-          preload="metadata"
-        />
+        openReel ? (
+          <Link
+            className="reel-open"
+            to={'/reels?start=' + post._id}
+            aria-label={'Open this reel by ' + name}
+          >
+            <video
+              className="post-video"
+              src={post.imageUrl + '#t=0.1'}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+            <span className="reel-badge" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" fill="currentColor" />
+              </svg>
+              Reel
+            </span>
+          </Link>
+        ) : (
+          <video
+            className="post-video"
+            src={post.imageUrl}
+            controls
+            playsInline
+            loop
+            preload="metadata"
+          />
+        )
       ) : (
         <img className="post-img" src={post.imageUrl} alt={post.caption || 'Post by ' + name} />
       )}

@@ -13,6 +13,7 @@ import {
   NavBell,
   NavSliders,
 } from './NavIcons';
+import LiveAlerts from './LiveAlerts';
 
 const cls = ({ isActive }) => 'nav-item' + (isActive ? ' active' : '');
 const deskCls = ({ isActive }) => 'nav-item desk-only' + (isActive ? ' active' : '');
@@ -74,6 +75,7 @@ export default function Topbar() {
 
   return (
     <>
+      <LiveAlerts />
       <header className="appbar">
         <Link to="/" className="brand" aria-label="Creators Hub home">
           <Logo size={30} />
